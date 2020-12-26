@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "dev.emi.cim.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [],
+  "client": [
+	  "ModelPredicateProviderRegistryMixin",
+	  "ModelOverrideMixin",
+	  "ModelOverrideDeserializerMixin"
+  ],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "cim",
+  "version": "${version}",
+  "name": "Complex Item Models",
+  "description": "Adds more capabilities to item models",
+  "authors": [
+    "Emi"
+  ],
+  "contributors": [],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/cim/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.emi.cim.CIMMain"
+    ],
+    "client": [],
+    "server": []
+  },
+  "mixins": [
+    "cim.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.10.8",
+    "fabric": "*"
+  }
+}
