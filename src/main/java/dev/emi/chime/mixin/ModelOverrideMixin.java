@@ -1,4 +1,4 @@
-package dev.emi.cim.mixin;
+package dev.emi.chime.mixin;
 
 import java.util.Map;
 
@@ -7,8 +7,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import dev.emi.cim.CIMMain;
-import dev.emi.cim.ModelOverrideWrapper;
+import dev.emi.chime.ChimeMain;
+import dev.emi.chime.ModelOverrideWrapper;
 import net.minecraft.client.render.model.json.ModelOverride;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.LivingEntity;
@@ -24,11 +24,14 @@ public class ModelOverrideMixin implements ModelOverrideWrapper {
 		if (world == null && entity != null) {
 			world = (ClientWorld) entity.getEntityWorld();
 		}
+		if (world == null && stack.getHolder() != null) {
+			world = (ClientWorld) stack.getHolder().getEntityWorld();
+		}
 		if (info.getReturnValue()) {
 			if (customPredicates.size() > 0) {
 				for (Map.Entry<String, Object> entry : customPredicates.entrySet()) {
-					if (CIMMain.CUSTOM_MODEL_PREDICATES.containsKey(entry.getKey())) {
-						if (!CIMMain.CUSTOM_MODEL_PREDICATES.get(entry.getKey()).matches(stack, world, entity, entry.getValue())) {
+					if (ChimeMain.CUSTOM_MODEL_PREDICATES.containsKey(entry.getKey())) {
+						if (!ChimeMain.CUSTOM_MODEL_PREDICATES.get(entry.getKey()).matches(stack, world, entity, entry.getValue())) {
 							info.setReturnValue(false);
 							return;
 						}

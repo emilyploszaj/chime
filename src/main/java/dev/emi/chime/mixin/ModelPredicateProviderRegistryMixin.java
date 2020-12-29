@@ -1,4 +1,4 @@
-package dev.emi.cim.mixin;
+package dev.emi.chime.mixin;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

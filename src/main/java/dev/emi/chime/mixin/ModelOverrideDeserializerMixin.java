@@ -1,4 +1,4 @@
-package dev.emi.cim.mixin;
+package dev.emi.chime.mixin;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -16,8 +16,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import dev.emi.cim.CIMMain;
-import dev.emi.cim.ModelOverrideWrapper;
+import dev.emi.chime.ChimeMain;
+import dev.emi.chime.ModelOverrideWrapper;
 import net.minecraft.client.render.model.json.ModelOverride;
 import net.minecraft.util.Identifier;
 
@@ -44,14 +44,14 @@ public class ModelOverrideDeserializerMixin {
 			if (path.length() > 0) {
 				newPath = path + "/" + newPath;
 			}
-			if (entry.getValue().isJsonObject()) {
+			if (entry.getValue().isJsonObject() && !entry.getKey().equals("nbt")) {
 				parseCustomPredicates(entry.getValue().getAsJsonObject(), newPath);
 				if (path.length() == 0) {
 					toRemove.add(entry.getKey());
 				}
 			} else {
-				if (CIMMain.CUSTOM_MODEL_PREDICATES.containsKey(newPath)) {
-					customPredicates.put(newPath, CIMMain.CUSTOM_MODEL_PREDICATES.get(newPath).parseType(entry.getValue()));
+				if (ChimeMain.CUSTOM_MODEL_PREDICATES.containsKey(newPath)) {
+					customPredicates.put(newPath, ChimeMain.CUSTOM_MODEL_PREDICATES.get(newPath).parseType(entry.getValue()));
 					if (path.length() == 0) {
 						toRemove.add(entry.getKey());
 					}

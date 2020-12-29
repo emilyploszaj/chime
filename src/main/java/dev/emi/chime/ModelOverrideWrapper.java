@@ -1,4 +1,4 @@
-package dev.emi.cim;
+package dev.emi.chime;
 
 import java.util.Map;
 

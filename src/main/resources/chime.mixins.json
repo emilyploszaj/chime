@@ -1,6 +1,6 @@
 {
   "required": true,
-  "package": "dev.emi.cim.mixin",
+  "package": "dev.emi.chime.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [],
   "client": [

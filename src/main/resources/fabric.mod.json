@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "id": "cim",
+  "id": "chime",
   "version": "${version}",
-  "name": "Complex Item Models",
+  "name": "Chime",
   "description": "Adds more capabilities to item models",
   "authors": [
     "Emi"
@@ -10,17 +10,17 @@
   "contributors": [],
   "contact": {},
   "license": "MIT",
-  "icon": "assets/cim/icon.png",
+  "icon": "assets/chime/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "dev.emi.cim.CIMMain"
+      "dev.emi.chime.ChimeMain"
     ],
     "client": [],
     "server": []
   },
   "mixins": [
-    "cim.mixins.json"
+    "chime.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.10.8",
