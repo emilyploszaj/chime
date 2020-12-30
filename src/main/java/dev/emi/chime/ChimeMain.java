@@ -36,6 +36,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.biome.Biome;
 
 // TODO move this to client
 @SuppressWarnings({"unchecked", "rawtypes"})
@@ -86,14 +87,39 @@ public class ChimeMain implements ModInitializer {
 		register("dimension/has_raids", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
 			return world != null && world.getDimension().hasRaids() == value;
 		});
-		register("dimension/natural", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
-			return world != null && world.getDimension().isNatural() == value;
-		});
 		register("world/raining", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
 			return world != null && world.isRaining() == value.booleanValue();
 		});
 		register("world/thundering", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
 			return world != null && world.isThundering() == value;
+		});
+		register("world/biome/id", Identifier.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Identifier value) -> {
+			Biome biome = getBiome(stack, world, entity);
+			if (biome != null) {
+				return world.getRegistryManager().get(Registry.BIOME_KEY).getId(biome).equals(value);
+			}
+			return false;
+		});
+		register("world/biome/precipitation", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
+			Biome biome = getBiome(stack, world, entity);
+			if (biome != null) {
+				return biome.getPrecipitation().getName().equals(value);
+			}
+			return false;
+		});
+		register("world/biome/temperature", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
+			Biome biome = getBiome(stack, world, entity);
+			if (biome != null) {
+				return value.contains(biome.getTemperature());
+			}
+			return false;
+		});
+		register("world/biome/downfall", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
+			Biome biome = getBiome(stack, world, entity);
+			if (biome != null) {
+				return value.contains(biome.getDownfall());
+			}
+			return false;
 		});
 		register("entity/nbt", JsonObject.class, (ItemStack stack, ClientWorld world, LivingEntity entity, JsonObject value) -> {
 			if (entity != null) {
@@ -147,16 +173,11 @@ public class ChimeMain implements ModInitializer {
 			}
 			return value.equals(s);
 		});
-		register("entity/target_block/can_mine", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
-			BlockState state = raycastBlockState(world, entity);
-			return value == stack.isEffectiveOn(state);
-		});
 		register("entity/target_block/id", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
 			BlockState state = raycastBlockState(world, entity);
 			if (value.startsWith("#")) {
-				MinecraftClient client = MinecraftClient.getInstance();
 				Identifier id = new Identifier(value.substring(1));
-				net.minecraft.tag.Tag<Block> tag = client.world.getTagManager().getBlocks().getTag(id);
+				net.minecraft.tag.Tag<Block> tag = world.getTagManager().getBlocks().getTag(id);
 				if (tag != null && tag.contains(state.getBlock())) {
 					return true;
 				}
@@ -167,13 +188,16 @@ public class ChimeMain implements ModInitializer {
 			}
 			return false;
 		});
+		register("entity/target_block/can_mine", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
+			BlockState state = raycastBlockState(world, entity);
+			return value == stack.isEffectiveOn(state);
+		});
 		register("entity/target_entity/id", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
-			MinecraftClient client = MinecraftClient.getInstance();
 			Entity hit = raycastEntity(world, entity);
 			if (hit != null) {
 				if (value.startsWith("#")) {
 					Identifier id = new Identifier(value.substring(1));
-					net.minecraft.tag.Tag<EntityType<?>> tag = client.world.getTagManager().getEntityTypes().getTag(id);
+					net.minecraft.tag.Tag<EntityType<?>> tag = world.getTagManager().getEntityTypes().getTag(id);
 					if (tag != null && tag.contains(hit.getType())) {
 						return true;
 					}
@@ -218,6 +242,17 @@ public class ChimeMain implements ModInitializer {
 					return entityHitResult.getEntity();
 				}
 			}
+		}
+		return null;
+	}
+
+	private static Biome getBiome(ItemStack stack, ClientWorld world, LivingEntity entity) {
+		Entity e = entity;
+		if (e == null) {
+			e = stack.getHolder();
+		}
+		if (world != null && e != null) {
+			return world.getBiome(e.getBlockPos());
 		}
 		return null;
 	}
