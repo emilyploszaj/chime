@@ -11,7 +11,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-import net.fabricmc.api.ModInitializer;
+import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -35,16 +35,18 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.Heightmap;
+import net.minecraft.world.LightType;
 import net.minecraft.world.biome.Biome;
 
-// TODO move this to client
 @SuppressWarnings({"unchecked", "rawtypes"})
-public class ChimeMain implements ModInitializer {
+public class ChimeClient implements ClientModInitializer {
 	public static final Map<String, CustomModelPredicate> CUSTOM_MODEL_PREDICATES = Maps.newHashMap();
 
 	@Override
-	public void onInitialize() {
+	public void onInitializeClient() {
 	}
 
 	static {
@@ -135,6 +137,38 @@ public class ChimeMain implements ModInitializer {
 		});
 		register("entity/z", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
 			return entity != null && ((Range<Float>) value).contains((float) entity.getZ());
+		});
+		register("entity/light", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
+			Entity e = entity;
+			if (e == null) {
+				e = stack.getHolder();
+			}
+			return e != null && value.contains((float) world.getLightLevel(new BlockPos(e.getX(), e.getEyeY(), e.getZ())));
+		});
+		register("entity/block_light", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
+			Entity e = entity;
+			if (e == null) {
+				e = stack.getHolder();
+			}
+			return e != null && value.contains((float) world.getLightLevel(LightType.BLOCK, new BlockPos(e.getX(), e.getEyeY(), e.getZ())));
+		});
+		register("entity/sky_light", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
+			Entity e = entity;
+			if (e == null) {
+				e = stack.getHolder();
+			}
+			return e != null && value.contains((float) world.getLightLevel(LightType.SKY, new BlockPos(e.getX(), e.getEyeY(), e.getZ())));
+		});
+		register("entity/can_see_sky", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
+			Entity e = entity;
+			if (e == null) {
+				e = stack.getHolder();
+			}
+			if (e != null) {
+				BlockPos pos = e.getBlockPos();
+				return (world.getTopY(Heightmap.Type.MOTION_BLOCKING, pos.getX(), pos.getZ()) <= e.getEyeY()) == value;
+			}
+			return false;
 		});
 		register("entity/hand", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
 			if (entity == null) {

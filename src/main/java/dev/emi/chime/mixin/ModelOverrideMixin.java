@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import dev.emi.chime.ChimeMain;
+import dev.emi.chime.ChimeClient;
 import dev.emi.chime.ModelOverrideWrapper;
 import net.minecraft.client.render.model.json.ModelOverride;
 import net.minecraft.client.world.ClientWorld;
@@ -30,8 +30,8 @@ public class ModelOverrideMixin implements ModelOverrideWrapper {
 		if (info.getReturnValue()) {
 			if (customPredicates.size() > 0) {
 				for (Map.Entry<String, Object> entry : customPredicates.entrySet()) {
-					if (ChimeMain.CUSTOM_MODEL_PREDICATES.containsKey(entry.getKey())) {
-						if (!ChimeMain.CUSTOM_MODEL_PREDICATES.get(entry.getKey()).matches(stack, world, entity, entry.getValue())) {
+					if (ChimeClient.CUSTOM_MODEL_PREDICATES.containsKey(entry.getKey())) {
+						if (!ChimeClient.CUSTOM_MODEL_PREDICATES.get(entry.getKey()).matches(stack, world, entity, entry.getValue())) {
 							info.setReturnValue(false);
 							return;
 						}

@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import dev.emi.chime.ChimeMain;
+import dev.emi.chime.ChimeClient;
 import dev.emi.chime.ModelOverrideWrapper;
 import net.minecraft.client.render.model.json.ModelOverride;
 import net.minecraft.util.Identifier;
@@ -50,8 +50,8 @@ public class ModelOverrideDeserializerMixin {
 					toRemove.add(entry.getKey());
 				}
 			} else {
-				if (ChimeMain.CUSTOM_MODEL_PREDICATES.containsKey(newPath)) {
-					customPredicates.put(newPath, ChimeMain.CUSTOM_MODEL_PREDICATES.get(newPath).parseType(entry.getValue()));
+				if (ChimeClient.CUSTOM_MODEL_PREDICATES.containsKey(newPath)) {
+					customPredicates.put(newPath, ChimeClient.CUSTOM_MODEL_PREDICATES.get(newPath).parseType(entry.getValue()));
 					if (path.length() == 0) {
 						toRemove.add(entry.getKey());
 					}

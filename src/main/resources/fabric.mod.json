@@ -13,10 +13,10 @@
   "icon": "assets/chime/icon.png",
   "environment": "*",
   "entrypoints": {
-    "main": [
-      "dev.emi.chime.ChimeMain"
+    "main": [],
+    "client": [
+      "dev.emi.chime.ChimeClient"
     ],
-    "client": [],
     "server": []
   },
   "mixins": [
