@@ -44,7 +44,7 @@ public class ModelOverrideDeserializerMixin {
 			if (path.length() > 0) {
 				newPath = path + "/" + newPath;
 			}
-			if (entry.getValue().isJsonObject() && !entry.getKey().equals("nbt")) {
+			if (entry.getValue().isJsonObject() && !entry.getKey().equals("nbt") && !entry.getKey().equals("hash")) {
 				parseCustomPredicates(entry.getValue().getAsJsonObject(), newPath);
 				if (path.length() == 0) {
 					toRemove.add(entry.getKey());

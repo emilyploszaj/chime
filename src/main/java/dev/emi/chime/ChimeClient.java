@@ -50,6 +50,9 @@ public class ChimeClient implements ClientModInitializer {
 	}
 
 	static {
+		register("count", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
+			return value.contains((float) stack.getCount());
+		});
 		register("nbt", JsonObject.class, (ItemStack stack, ClientWorld world, LivingEntity entity, JsonObject value) -> {
 			if (stack.hasTag()) {
 				return matchesJsonObject(value, stack.getTag());
@@ -58,6 +61,9 @@ public class ChimeClient implements ClientModInitializer {
 		});
 		register("name", Pattern.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Pattern value) -> {
 			return value.matcher(stack.getName().asString()).matches();
+		});
+		register("hash", HashPredicate.class, (ItemStack stack, ClientWorld world, LivingEntity entity, HashPredicate value) -> {
+			return value.matches(stack.getTag());
 		});
 		register("dimension/id", Identifier.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Identifier value) -> {
 			return world != null && world.getRegistryKey().getValue().equals(value);
@@ -310,6 +316,8 @@ public class ChimeClient implements ClientModInitializer {
 			CUSTOM_MODEL_PREDICATES.put(key, new FloatRangeCustomModelPredicate((CustomModelPredicateFunction<Range<Float>>) func));
 		} else if (clazz == JsonObject.class) {
 			CUSTOM_MODEL_PREDICATES.put(key, new JsonObjectCustomModelPredicate((CustomModelPredicateFunction<JsonObject>) func));
+		} else if (clazz == HashPredicate.class) {
+			CUSTOM_MODEL_PREDICATES.put(key, new HashPredicateCustomModelPredicate((CustomModelPredicateFunction<HashPredicate>) func));
 		} else {
 			throw new UnsupportedOperationException();
 		}
@@ -426,55 +434,6 @@ public class ChimeClient implements ClientModInitializer {
 		}
 		throw new UnsupportedOperationException();
 	}
-/*
-	private static boolean objectMatches(CompoundTag base, CompoundTag comp) {
-		for (String key : base.getKeys()) {
-			Tag t = base.get(key);
-			if (!comp.contains(key, t.getType())) {
-				return false;
-			}
-			if (t.getType() == 10) {
-				if (!objectMatches((CompoundTag) t, comp.getCompound(key))) {
-					return false;
-				}
-			} else if (t.getType() == 9) {
-				if (!listMatches((ListTag) t, (ListTag) comp.get(key))) {
-					return false;
-				}
-			} else {
-				if (!t.equals(comp.get(key))) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-
-	private static boolean listMatches(ListTag base, ListTag comp) {
-		outer:
-		for (Tag b : base) {
-			for (Tag c : comp) {
-				if (b.getType() != c.getType()) {
-					return false;
-				}
-				if (b.getType() == 10) {
-					if (objectMatches((CompoundTag) b, (CompoundTag) c)) {
-						continue outer;
-					}
-				} else if (b.getType() == 9) {
-					if (listMatches((ListTag) b, (ListTag) c)) {
-						continue outer;
-					}
-				} else {
-					if (b.equals(c)) {
-						continue outer;
-					}
-				}
-			}
-			return false;
-		}
-		return true;
-	}*/
 
 	public static abstract class CustomModelPredicate<T> {
 		private CustomModelPredicateFunction<T> function;
@@ -624,7 +583,58 @@ public class ChimeClient implements ClientModInitializer {
 		}
 	}
 
+	public static class HashPredicateCustomModelPredicate extends CustomModelPredicate<HashPredicate> {
+
+		public HashPredicateCustomModelPredicate(CustomModelPredicateFunction<HashPredicate> function) {
+			super(function);
+		}
+
+		@Override
+		public HashPredicate parseType(JsonElement element) {
+			JsonObject object = element.getAsJsonObject();
+			int modulo = object.get("modulo").getAsInt();
+			Range<Float> value = parseRange(Float.class, object.get("value").getAsString());
+			String subTag = "";
+			if (object.has("tag")) {
+				subTag = object.get("tag").getAsString();
+			}
+			return new HashPredicate(subTag, modulo, value);
+		}
+	}
+
 	public interface CustomModelPredicateFunction<T> {
 		public boolean matches(ItemStack stack, ClientWorld world, LivingEntity entity, T value);
+	}
+
+	public static class HashPredicate {
+		public String subTag;
+		public int modulo;
+		public Range<Float> value;
+
+		public HashPredicate(String subTag, int modulo, Range<Float> value) {
+			this.subTag = subTag;
+			this.modulo = modulo;
+			this.value = value;
+		}
+
+		public boolean matches(Tag tag) {
+			try {
+				String[] tags = subTag.split("/");
+				for (String t : tags) {
+					if (t.length() == 0) {
+						continue;
+					}
+					tag = ((CompoundTag) tag).get(t);
+				}
+				int i = tag.toString().hashCode();
+				i = i % modulo;
+				if (i < 0) {
+					i += modulo;
+				}
+				return value.contains((float) i);
+			} catch (Exception e) {
+			}
+			return value.contains(-1f);
+		}
 	}
 }
