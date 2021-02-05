@@ -1,0 +1,2 @@
+# Chime
+Chime is a mod that adds a predicate system for more dynamic and interesting item model variation. It supports the ability to vary model based on countless conditions, such as the item's name, enchantments, NBT, dimension, entity, and plenty more. Chime is built in with vanilla's predicate system, building on it instead of replacing it with a foreign system. The Chime wiki has exhaustive information on Chime's format, as well as information on how to use it as a resource pack or mod maker. This includes examples and documentation.
