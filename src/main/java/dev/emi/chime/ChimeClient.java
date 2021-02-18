@@ -11,6 +11,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
+import dev.emi.chime.override.ChimeArmorOverrideLoader;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -19,6 +20,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.AbstractListTag;
@@ -31,6 +33,7 @@ import net.minecraft.nbt.ShortTag;
 import net.minecraft.nbt.StringNbtReader;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resource.ReloadableResourceManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -47,11 +50,18 @@ public class ChimeClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
+		MinecraftClient.getInstance().execute(() -> {
+			ChimeArmorOverrideLoader.firstLoad();
+			((ReloadableResourceManager) MinecraftClient.getInstance().getResourceManager()).registerListener(new ChimeArmorOverrideLoader());
+		});
 	}
 
 	static {
 		register("count", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
 			return value.contains((float) stack.getCount());
+		});
+		register("durability", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
+			return value.contains((float) stack.getDamage());
 		});
 		register("nbt", JsonObject.class, (ItemStack stack, ClientWorld world, LivingEntity entity, JsonObject value) -> {
 			if (stack.hasTag()) {
@@ -59,8 +69,12 @@ public class ChimeClient implements ClientModInitializer {
 			}
 			return false;
 		});
-		register("name", Pattern.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Pattern value) -> {
-			return value.matcher(stack.getName().asString()).matches();
+		register("name", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
+			if (value.startsWith("/") && value.endsWith("/")) {
+				return Pattern.matches(value, stack.getName().asString());
+			} else {
+				return value.equals(stack.getName().asString());
+			}
 		});
 		register("hash", HashPredicate.class, (ItemStack stack, ClientWorld world, LivingEntity entity, HashPredicate value) -> {
 			return value.matches(stack.getTag());
@@ -192,6 +206,23 @@ public class ChimeClient implements ClientModInitializer {
 				case "neither":
 				case "none":
 					return !(main || off);
+				default:
+					return false;
+			}
+		});
+		register("entity/slot", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
+			if (entity == null) {
+				return false;
+			}
+			switch (value) {
+				case "head":
+					return entity.getEquippedStack(EquipmentSlot.HEAD) == stack;
+				case "chest":
+					return entity.getEquippedStack(EquipmentSlot.CHEST) == stack;
+				case "legs":
+					return entity.getEquippedStack(EquipmentSlot.LEGS) == stack;
+				case "feet":
+					return entity.getEquippedStack(EquipmentSlot.FEET) == stack;
 				default:
 					return false;
 			}
@@ -388,7 +419,13 @@ public class ChimeClient implements ClientModInitializer {
 				}
 			} else if (tag instanceof StringTag) {
 				if (primitive.isString()) {
-					return primitive.getAsString().equals(((StringTag) tag).asString());
+					String prim = primitive.getAsString();
+					String text = ((StringTag) tag).asString();
+					if (prim.startsWith("/") && prim.endsWith("/")) {
+						return Pattern.matches(prim, text);
+					} else {
+						return prim.equals(text);
+					}
 				}
 			}
 		}

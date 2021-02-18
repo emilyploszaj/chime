@@ -5,7 +5,10 @@
   "mixins": [],
   "client": [
 	  "ModelOverrideMixin",
-	  "ModelOverrideDeserializerMixin"
+	  "ModelOverrideDeserializerMixin",
+    "ArmorFeatureRendererMixin",
+    "JsonUnbakedModelMixin",
+    "ModelOverrideAccessor"
   ],
   "server": [],
   "injectors": {
