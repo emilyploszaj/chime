@@ -71,7 +71,7 @@ public class ChimeClient implements ClientModInitializer {
 		});
 		register("name", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
 			if (value.startsWith("/") && value.endsWith("/")) {
-				return Pattern.matches(value, stack.getName().asString());
+				return Pattern.matches(value.substring(1, value.length() - 1), stack.getName().asString());
 			} else {
 				return value.equals(stack.getName().asString());
 			}
@@ -422,7 +422,7 @@ public class ChimeClient implements ClientModInitializer {
 					String prim = primitive.getAsString();
 					String text = ((StringTag) tag).asString();
 					if (prim.startsWith("/") && prim.endsWith("/")) {
-						return Pattern.matches(prim, text);
+						return Pattern.matches(prim.substring(1, prim.length() - 1), text);
 					} else {
 						return prim.equals(text);
 					}
