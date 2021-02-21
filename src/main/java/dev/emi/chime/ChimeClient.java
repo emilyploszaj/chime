@@ -372,6 +372,10 @@ public class ChimeClient implements ClientModInitializer {
 	}
 
 	private static boolean matchesJsonArray(JsonArray array, AbstractListTag list) {
+		// TODO lists can match the same element, but solving this would require permutations
+		if (list.size() < array.size()) {
+			return false;
+		}
 		outer:
 		for (JsonElement element : array) {
 			for (Object object : list) {
@@ -519,7 +523,7 @@ public class ChimeClient implements ClientModInitializer {
 				String[] parts = s.split("\\.\\.");
 				if (parts.length == 2) {
 					BoundType lt = parts[0].startsWith("[") ? BoundType.CLOSED : BoundType.OPEN;
-					BoundType rt = parts[1].endsWith("[") ? BoundType.CLOSED : BoundType.OPEN;
+					BoundType rt = parts[1].endsWith("]") ? BoundType.CLOSED : BoundType.OPEN;
 					return Range.range(Float.parseFloat(parts[0].substring(1)), lt, Float.parseFloat(parts[1].substring(0, parts[1].length() - 1)), rt);
 				}
 			} else {
