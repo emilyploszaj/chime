@@ -7,4 +7,7 @@ public interface ModelOverrideWrapper {
 	public void setCustomPredicates(Map<String, Object> map);
 	
 	public Object getCustomPredicate(String key);
+
+	public Map<String, Object> getCustomPredicates();
+
 }

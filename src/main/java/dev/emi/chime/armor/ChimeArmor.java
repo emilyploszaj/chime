@@ -14,6 +14,7 @@ public class ChimeArmor {
 	public static Map<Identifier, List<ModelOverride>> armorOverrides;
 	
 	public static <T extends LivingEntity> Identifier getArmorIdentifier(Identifier id, ItemStack stack, T entity) {
+		/*
 		if (armorOverrides.containsKey(id)) {
 			for (ModelOverride override : armorOverrides.get(id)) {
 				if (((ModelOverrideAccessor) override).invokeMatches(stack, (ClientWorld) entity.getEntityWorld(), entity)) {
@@ -21,6 +22,7 @@ public class ChimeArmor {
 				}
 			}
 		}
+		}*/
 		return null;
 	}
 }

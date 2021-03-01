@@ -34,6 +34,8 @@ import net.minecraft.nbt.StringNbtReader;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resource.ReloadableResourceManager;
+import net.minecraft.tag.BlockTags;
+import net.minecraft.tag.EntityTypeTags;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -145,7 +147,7 @@ public class ChimeClient implements ClientModInitializer {
 		});
 		register("entity/nbt", JsonObject.class, (ItemStack stack, ClientWorld world, LivingEntity entity, JsonObject value) -> {
 			if (entity != null) {
-				return matchesJsonObject(value, entity.toTag(new CompoundTag()));
+				return matchesJsonObject(value, entity.writeNbt(new CompoundTag()));
 			}
 			return false;
 		});
@@ -248,7 +250,7 @@ public class ChimeClient implements ClientModInitializer {
 			BlockState state = raycastBlockState(world, entity);
 			if (value.startsWith("#")) {
 				Identifier id = new Identifier(value.substring(1));
-				net.minecraft.tag.Tag<Block> tag = world.getTagManager().getBlocks().getTag(id);
+				net.minecraft.tag.Tag<Block> tag = BlockTags.getTagGroup().getTag(id);
 				if (tag != null && tag.contains(state.getBlock())) {
 					return true;
 				}
@@ -261,14 +263,14 @@ public class ChimeClient implements ClientModInitializer {
 		});
 		register("entity/target_block/can_mine", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
 			BlockState state = raycastBlockState(world, entity);
-			return value == stack.isEffectiveOn(state);
+			return value == stack.isSuitableFor(state);
 		});
 		register("entity/target_entity/id", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
 			Entity hit = raycastEntity(world, entity);
 			if (hit != null) {
 				if (value.startsWith("#")) {
 					Identifier id = new Identifier(value.substring(1));
-					net.minecraft.tag.Tag<EntityType<?>> tag = world.getTagManager().getEntityTypes().getTag(id);
+					net.minecraft.tag.Tag<EntityType<?>> tag = EntityTypeTags.getTagGroup().getTag(id);
 					if (tag != null && tag.contains(hit.getType())) {
 						return true;
 					}
@@ -283,7 +285,7 @@ public class ChimeClient implements ClientModInitializer {
 		register("entity/target_entity/nbt", JsonObject.class, (ItemStack stack, ClientWorld world, LivingEntity entity, JsonObject value) -> {
 			Entity hit = raycastEntity(world, entity);
 			if (hit != null) {
-				return matchesJsonObject(value, hit.toTag(new CompoundTag()));
+				return matchesJsonObject(value, hit.writeNbt(new CompoundTag()));
 			}
 			return false;
 		});
