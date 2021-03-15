@@ -21,10 +21,10 @@ public class ModelOverrideMixin implements ModelOverrideWrapper {
 	@SuppressWarnings("unchecked")
 	@Inject(at = @At("RETURN"), method = "matches", cancellable = true)
 	private void matches(ItemStack stack, ClientWorld world, LivingEntity entity, CallbackInfoReturnable<Boolean> info) {
-		if (world == null && entity != null) {
+		if (world == null && entity != null && entity.getEntityWorld() instanceof ClientWorld) {
 			world = (ClientWorld) entity.getEntityWorld();
 		}
-		if (world == null && stack.getHolder() != null) {
+		if (world == null && stack.getHolder() != null && stack.getHolder().getEntityWorld() instanceof ClientWorld) {
 			world = (ClientWorld) stack.getHolder().getEntityWorld();
 		}
 		if (info.getReturnValue()) {
