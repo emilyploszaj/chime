@@ -23,16 +23,16 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.AbstractListTag;
-import net.minecraft.nbt.AbstractNumberTag;
-import net.minecraft.nbt.ByteTag;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.IntTag;
-import net.minecraft.nbt.LongTag;
-import net.minecraft.nbt.ShortTag;
+import net.minecraft.nbt.AbstractNbtList;
+import net.minecraft.nbt.AbstractNbtNumber;
+import net.minecraft.nbt.NbtByte;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtInt;
+import net.minecraft.nbt.NbtLong;
+import net.minecraft.nbt.NbtShort;
 import net.minecraft.nbt.StringNbtReader;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.NbtString;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.resource.ReloadableResourceManager;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.tag.EntityTypeTags;
@@ -54,7 +54,7 @@ public class ChimeClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		MinecraftClient.getInstance().execute(() -> {
 			ChimeArmorOverrideLoader.firstLoad();
-			((ReloadableResourceManager) MinecraftClient.getInstance().getResourceManager()).registerListener(new ChimeArmorOverrideLoader());
+			((ReloadableResourceManager) MinecraftClient.getInstance().getResourceManager()).registerReloader(new ChimeArmorOverrideLoader());
 		});
 	}
 
@@ -147,7 +147,7 @@ public class ChimeClient implements ClientModInitializer {
 		});
 		register("entity/nbt", JsonObject.class, (ItemStack stack, ClientWorld world, LivingEntity entity, JsonObject value) -> {
 			if (entity != null) {
-				return matchesJsonObject(value, entity.writeNbt(new CompoundTag()));
+				return matchesJsonObject(value, entity.writeNbt(new NbtCompound()));
 			}
 			return false;
 		});
@@ -198,36 +198,25 @@ public class ChimeClient implements ClientModInitializer {
 			}
 			boolean main = entity.getMainHandStack() == stack;
 			boolean off = entity.getOffHandStack() == stack;
-			switch (value) {
-				case "main":
-					return main;
-				case "off":
-					return off;
-				case "either":
-					return main || off;
-				case "neither":
-				case "none":
-					return !(main || off);
-				default:
-					return false;
-			}
+			return switch (value) {
+				case "main" -> main;
+				case "off" -> off;
+				case "either" -> main || off;
+				case "neither", "none" -> !(main || off);
+				default -> false;
+			};
 		});
 		register("entity/slot", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
 			if (entity == null) {
 				return false;
 			}
-			switch (value) {
-				case "head":
-					return entity.getEquippedStack(EquipmentSlot.HEAD) == stack;
-				case "chest":
-					return entity.getEquippedStack(EquipmentSlot.CHEST) == stack;
-				case "legs":
-					return entity.getEquippedStack(EquipmentSlot.LEGS) == stack;
-				case "feet":
-					return entity.getEquippedStack(EquipmentSlot.FEET) == stack;
-				default:
-					return false;
-			}
+			return switch (value) {
+				case "head" -> entity.getEquippedStack(EquipmentSlot.HEAD) == stack;
+				case "chest" -> entity.getEquippedStack(EquipmentSlot.CHEST) == stack;
+				case "legs" -> entity.getEquippedStack(EquipmentSlot.LEGS) == stack;
+				case "feet" -> entity.getEquippedStack(EquipmentSlot.FEET) == stack;
+				default -> false;
+			};
 		});
 		register("entity/target", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
 			String s = "none";
@@ -285,7 +274,7 @@ public class ChimeClient implements ClientModInitializer {
 		register("entity/target_entity/nbt", JsonObject.class, (ItemStack stack, ClientWorld world, LivingEntity entity, JsonObject value) -> {
 			Entity hit = raycastEntity(world, entity);
 			if (hit != null) {
-				return matchesJsonObject(value, hit.writeNbt(new CompoundTag()));
+				return matchesJsonObject(value, hit.writeNbt(new NbtCompound()));
 			}
 			return false;
 		});
@@ -341,8 +330,8 @@ public class ChimeClient implements ClientModInitializer {
 			CUSTOM_MODEL_PREDICATES.put(key, new StringCustomModelPredicate((CustomModelPredicateFunction<String>) func));
 		} else if (clazz == Pattern.class) {
 			CUSTOM_MODEL_PREDICATES.put(key, new PatternCustomModelPredicate((CustomModelPredicateFunction<Pattern>) func));
-		} else if (clazz == CompoundTag.class) {
-			CUSTOM_MODEL_PREDICATES.put(key, new CompoundTagCustomModelPredicate((CustomModelPredicateFunction<CompoundTag>) func));
+		} else if (clazz == NbtCompound.class) {
+			CUSTOM_MODEL_PREDICATES.put(key, new NbtCompoundCustomModelPredicate((CustomModelPredicateFunction<NbtCompound>) func));
 		} else if (clazz == Identifier.class) {
 			CUSTOM_MODEL_PREDICATES.put(key, new IdentifierCustomModelPredicate((CustomModelPredicateFunction<Identifier>) func));
 		} else if (clazz == Range.class) {
@@ -356,7 +345,7 @@ public class ChimeClient implements ClientModInitializer {
 		}
 	}
 
-	private static boolean matchesJsonObject(JsonObject object, CompoundTag tag) {
+	private static boolean matchesJsonObject(JsonObject object, NbtCompound tag) {
 		for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
 			String key = entry.getKey();
 			JsonElement element = entry.getValue();
@@ -373,7 +362,7 @@ public class ChimeClient implements ClientModInitializer {
 		return true;
 	}
 
-	private static boolean matchesJsonArray(JsonArray array, AbstractListTag list) {
+	private static boolean matchesJsonArray(JsonArray array, AbstractNbtList list) {
 		// TODO lists can match the same element, but solving this would require permutations
 		if (list.size() < array.size()) {
 			return false;
@@ -381,8 +370,7 @@ public class ChimeClient implements ClientModInitializer {
 		outer:
 		for (JsonElement element : array) {
 			for (Object object : list) {
-				if (object instanceof Tag) {
-					Tag tag = (Tag) object;
+				if (object instanceof NbtElement tag) {
 					if (matchesJsonElement(element, tag)) {
 						continue outer;
 					}
@@ -393,40 +381,36 @@ public class ChimeClient implements ClientModInitializer {
 		return true;
 	}
 
-	private static boolean matchesJsonElement(JsonElement element, Tag tag) {
+	private static boolean matchesJsonElement(JsonElement element, NbtElement tag) {
 		if (element.isJsonObject()) {
-			return tag.getType() == 10 && matchesJsonObject(element.getAsJsonObject(), (CompoundTag) tag);
+			return tag.getType() == 10 && matchesJsonObject(element.getAsJsonObject(), (NbtCompound) tag);
 		} else if (element.isJsonArray()) {
-			return tag instanceof AbstractListTag && matchesJsonArray(element.getAsJsonArray(), (AbstractListTag) tag);
+			return tag instanceof AbstractNbtList && matchesJsonArray(element.getAsJsonArray(), (AbstractNbtList) tag);
 		} else {
 			JsonPrimitive primitive = element.getAsJsonPrimitive();
-			if (tag instanceof AbstractNumberTag) {
-				AbstractNumberTag number = (AbstractNumberTag) tag;
-				boolean isInt = false;
-				if (tag instanceof ByteTag || tag instanceof ShortTag || tag instanceof IntTag || tag instanceof LongTag) {
-					isInt = true;
-				}
+			if (tag instanceof AbstractNbtNumber number) {
+				boolean isInt = tag instanceof NbtByte || tag instanceof NbtShort || tag instanceof NbtInt || tag instanceof NbtLong;
 				if (primitive.isBoolean()) {
-					return isInt && primitive.getAsBoolean() == (number.getInt() == 1);
+					return isInt && primitive.getAsBoolean() == (number.intValue() == 1);
 				} else if (primitive.isNumber()) {
 					if (isInt) {
-						return primitive.getAsLong() == number.getLong();
+						return primitive.getAsLong() == number.longValue();
 					} else {
-						return primitive.getAsDouble() == number.getDouble();
+						return primitive.getAsDouble() == number.doubleValue();
 					}
 				} else if (primitive.isString()) {
 					if (isInt) {
 						Range r = parseRange(Long.class, primitive.getAsString());
-						return r != null && r.contains(number.getLong());
+						return r != null && r.contains(number.longValue());
 					} else {
 						Range r = parseRange(Double.class, primitive.getAsString());
-						return r != null && r.contains(number.getDouble());
+						return r != null && r.contains(number.doubleValue());
 					}
 				}
-			} else if (tag instanceof StringTag) {
+			} else if (tag instanceof NbtString) {
 				if (primitive.isString()) {
 					String prim = primitive.getAsString();
-					String text = ((StringTag) tag).asString();
+					String text = ((NbtString) tag).asString();
 					if (prim.startsWith("/") && prim.endsWith("/")) {
 						return Pattern.matches(prim.substring(1, prim.length() - 1), text);
 					} else {
@@ -479,7 +463,7 @@ public class ChimeClient implements ClientModInitializer {
 	}
 
 	public static abstract class CustomModelPredicate<T> {
-		private CustomModelPredicateFunction<T> function;
+		private final CustomModelPredicateFunction<T> function;
 
 		public CustomModelPredicate(CustomModelPredicateFunction<T> function) {
 			this.function = function;
@@ -586,14 +570,14 @@ public class ChimeClient implements ClientModInitializer {
 		}
 	}
 
-	public static class CompoundTagCustomModelPredicate extends CustomModelPredicate<CompoundTag> {
+	public static class NbtCompoundCustomModelPredicate extends CustomModelPredicate<NbtCompound> {
 
-		public CompoundTagCustomModelPredicate(CustomModelPredicateFunction<CompoundTag> function) {
+		public NbtCompoundCustomModelPredicate(CustomModelPredicateFunction<NbtCompound> function) {
 			super(function);
 		}
 
 		@Override
-		public CompoundTag parseType(JsonElement element) {
+		public NbtCompound parseType(JsonElement element) {
 			try {
 				return StringNbtReader.parse(element.getAsString());
 			} catch(Exception e) {
@@ -660,14 +644,14 @@ public class ChimeClient implements ClientModInitializer {
 			this.value = value;
 		}
 
-		public boolean matches(Tag tag) {
+		public boolean matches(NbtElement tag) {
 			try {
 				String[] tags = subTag.split("/");
 				for (String t : tags) {
 					if (t.length() == 0) {
 						continue;
 					}
-					tag = ((CompoundTag) tag).get(t);
+					tag = ((NbtCompound) tag).get(t);
 				}
 				int i = tag.toString().hashCode();
 				i = i % modulo;
