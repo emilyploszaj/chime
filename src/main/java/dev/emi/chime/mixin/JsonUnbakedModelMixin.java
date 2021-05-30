@@ -13,6 +13,7 @@ import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Pair;
 
 import org.apache.logging.log4j.LogManager;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -39,6 +40,7 @@ public class JsonUnbakedModelMixin {
 	@Unique
 	private boolean chimeOverrides = false;
 	@Shadow
+	@Final
 	private List<ModelOverride> overrides;
 	@Shadow
 	public String id;
@@ -66,7 +68,7 @@ public class JsonUnbakedModelMixin {
 		ModelOverride.Deserializer deserializer = new ChimeArmorOverrideLoader.Deserializer2();
 		ResourceManager manager = MinecraftClient.getInstance().getResourceManager();
 		try {
-			if (id.contains("#") || id.contains(" ")) { // Gets rid of an error when loading invalid vanilla models
+			if (id.contains("#") || id.contains(" ")) { // Gets rid of an error when loading "minecraft:builtin/missing#missing" or "generation marker"
 				return;
 			}
 			Identifier baseId = new Identifier(id);
