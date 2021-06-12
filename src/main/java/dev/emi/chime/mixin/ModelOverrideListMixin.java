@@ -46,7 +46,7 @@ public class ModelOverrideListMixin {
 	}
 
 	@SuppressWarnings("unchecked")
-	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/model/json/ModelOverrideList$BakedOverride;method_33699(Lnet/minecraft/client/render/model/json/ModelOverrideList$BakedOverride;[F)Z"), method = "apply")
+	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/model/json/ModelOverrideList$BakedOverride;test([F)Z"), method = "apply")
 	private boolean redirect(BakedOverride override, float[] arr, BakedModel model, ItemStack stack, ClientWorld world, LivingEntity entity, int seed) {
 		currentIndex--;
 		if (override.test(arr)) {
