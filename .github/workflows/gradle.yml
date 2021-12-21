@@ -7,9 +7,9 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ "1.17" ]
+    branches: [ "1.18.1" ]
   pull_request:
-    branches: [ "1.17" ]
+    branches: [ "1.18.1" ]
 
 jobs:
   build:
@@ -21,7 +21,7 @@ jobs:
     - name: Set up JDK 16
       uses: actions/setup-java@v2
       with:
-        java-version: '16'
+        java-version: '17'
         distribution: 'adopt'
         cache: gradle
     - name: Grant execute permission for gradlew

@@ -66,8 +66,8 @@ public class ChimeClient implements ClientModInitializer {
 			return value.contains((float) stack.getDamage());
 		});
 		register("nbt", JsonObject.class, (ItemStack stack, ClientWorld world, LivingEntity entity, JsonObject value) -> {
-			if (stack.hasTag()) {
-				return matchesJsonObject(value, stack.getTag());
+			if (stack.hasNbt()) {
+				return matchesJsonObject(value, stack.getNbt());
 			}
 			return false;
 		});
@@ -79,7 +79,7 @@ public class ChimeClient implements ClientModInitializer {
 			}
 		});
 		register("hash", HashPredicate.class, (ItemStack stack, ClientWorld world, LivingEntity entity, HashPredicate value) -> {
-			return value.matches(stack.getTag());
+			return value.matches(stack.getNbt());
 		});
 		register("dimension/id", Identifier.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Identifier value) -> {
 			return world != null && world.getRegistryKey().getValue().equals(value);
@@ -240,15 +240,10 @@ public class ChimeClient implements ClientModInitializer {
 			if (value.startsWith("#")) {
 				Identifier id = new Identifier(value.substring(1));
 				net.minecraft.tag.Tag<Block> tag = BlockTags.getTagGroup().getTag(id);
-				if (tag != null && tag.contains(state.getBlock())) {
-					return true;
-				}
+				return tag != null && tag.contains(state.getBlock());
 			} else {
-				if (Registry.BLOCK.getId(state.getBlock()).equals(new Identifier(value))) {
-					return true;
-				}
+				return Registry.BLOCK.getId(state.getBlock()).equals(new Identifier(value));
 			}
-			return false;
 		});
 		register("entity/target_block/can_mine", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
 			BlockState state = raycastBlockState(world, entity);
@@ -260,13 +255,9 @@ public class ChimeClient implements ClientModInitializer {
 				if (value.startsWith("#")) {
 					Identifier id = new Identifier(value.substring(1));
 					net.minecraft.tag.Tag<EntityType<?>> tag = EntityTypeTags.getTagGroup().getTag(id);
-					if (tag != null && tag.contains(hit.getType())) {
-						return true;
-					}
+					return tag != null && tag.contains(hit.getType());
 				} else {
-					if (EntityType.getId(hit.getType()).equals(new Identifier(value))) {
-						return true;
-					}
+					return EntityType.getId(hit.getType()).equals(new Identifier(value));
 				}
 			}
 			return false;
@@ -410,7 +401,7 @@ public class ChimeClient implements ClientModInitializer {
 			} else if (tag instanceof NbtString) {
 				if (primitive.isString()) {
 					String prim = primitive.getAsString();
-					String text = ((NbtString) tag).asString();
+					String text = tag.asString();
 					if (prim.startsWith("/") && prim.endsWith("/")) {
 						return Pattern.matches(prim.substring(1, prim.length() - 1), text);
 					} else {
@@ -630,7 +621,7 @@ public class ChimeClient implements ClientModInitializer {
 	}
 
 	public interface CustomModelPredicateFunction<T> {
-		public boolean matches(ItemStack stack, ClientWorld world, LivingEntity entity, T value);
+		boolean matches(ItemStack stack, ClientWorld world, LivingEntity entity, T value);
 	}
 
 	public static class HashPredicate {
