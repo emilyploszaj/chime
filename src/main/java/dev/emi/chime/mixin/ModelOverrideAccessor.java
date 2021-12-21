@@ -11,6 +11,6 @@ import net.minecraft.item.ItemStack;
 @Mixin(ModelOverride.class)
 public interface ModelOverrideAccessor {
 	
-	@Invoker("matches")
-	public boolean invokeMatches(ItemStack stack, ClientWorld world, LivingEntity entity);
+//	@Invoker("matches")
+boolean invokeMatches(ItemStack stack, ClientWorld world, LivingEntity entity);
 }
