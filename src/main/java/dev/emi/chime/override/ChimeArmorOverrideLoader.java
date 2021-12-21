@@ -2,6 +2,7 @@ package dev.emi.chime.override;
 
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,6 +85,8 @@ public class ChimeArmorOverrideLoader implements SimpleResourceReloadListener<Ma
 			} catch (Exception e) {
 				LogManager.getLogger("chime").warn("[chime] IO error reading armor overrides: " + name, e);
 			}
+			// Abide by minecraft override standard and match bottom up
+			Collections.reverse(list);
 			map.put(new Identifier(id.getNamespace(), "textures/models/armor/" + name + ".png"), list);
 		}
 		return map;
