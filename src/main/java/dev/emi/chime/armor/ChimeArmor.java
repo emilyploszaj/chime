@@ -20,6 +20,6 @@ public class ChimeArmor {
 				}
 			}
 		}*/
-		return id;
+		return null;
 	}
 }
