@@ -66,7 +66,7 @@ public class JsonUnbakedModelMixin {
 		ModelOverride.Deserializer deserializer = new ChimeArmorOverrideLoader.Deserializer2();
 		ResourceManager manager = MinecraftClient.getInstance().getResourceManager();
 		try {
-			if (id.contains("#") || id.contains(" ")) { // Gets rid of an error when loading invalid vanilla models
+			if (id.contains("#") || id.contains(" ")) { // Gets rid of an error when loading vanilla models
 				return;
 			}
 			Identifier baseId = new Identifier(id);
