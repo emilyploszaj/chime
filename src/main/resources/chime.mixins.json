@@ -4,8 +4,8 @@
   "compatibilityLevel": "JAVA_16",
   "mixins": [],
   "client": [
-	"ModelOverrideMixin",
-	"ModelOverrideDeserializerMixin",
+    "ModelOverrideMixin",
+    "ModelOverrideDeserializerMixin",
     "ArmorFeatureRendererMixin",
     "JsonUnbakedModelMixin",
     "BakedModelOverrideMixin",
