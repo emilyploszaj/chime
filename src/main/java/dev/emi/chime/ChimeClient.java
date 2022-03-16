@@ -1,8 +1,5 @@
 package dev.emi.chime;
 
-import java.util.Map;
-import java.util.regex.Pattern;
-
 import com.google.common.collect.BoundType;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
@@ -10,7 +7,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-
 import dev.emi.chime.override.ChimeArmorOverrideLoader;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.block.Block;
@@ -33,19 +29,22 @@ import net.minecraft.nbt.NbtLong;
 import net.minecraft.nbt.NbtShort;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.nbt.StringNbtReader;
-import net.minecraft.resource.ReloadableResourceManager;
-import net.minecraft.tag.BlockTags;
-import net.minecraft.tag.EntityTypeTags;
-import net.minecraft.tag.Tag;
+import net.minecraft.resource.ReloadableResourceManagerImpl;
+import net.minecraft.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.LightType;
 import net.minecraft.world.biome.Biome;
+
+import java.util.Map;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class ChimeClient implements ClientModInitializer {
@@ -58,7 +57,7 @@ public class ChimeClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		MinecraftClient.getInstance().execute(() -> {
 			ChimeArmorOverrideLoader.firstLoad();
-			((ReloadableResourceManager) MinecraftClient.getInstance().getResourceManager()).registerReloader(new ChimeArmorOverrideLoader());
+			((ReloadableResourceManagerImpl) MinecraftClient.getInstance().getResourceManager()).registerReloader(new ChimeArmorOverrideLoader());
 		});
 	}
 
@@ -270,10 +269,13 @@ public class ChimeClient implements ClientModInitializer {
 			BlockState state = raycastBlockState(world, entity);
 			if (value.startsWith("#")) {
 				Identifier id = new Identifier(value.substring(1));
-				
-				Tag<Block> tag = BlockTags.getTagGroup().getTag(id);
-				if (tag != null && tag.contains(state.getBlock())) {
-					return true;
+
+				Registry<Block> blockRegistry = world.getRegistryManager().get(Registry.BLOCK_KEY);
+				Optional<RegistryKey<Block>> key = blockRegistry.getKey(state.getBlock());
+
+				for (TagKey<Block> blockTagKey : blockRegistry.entryOf(key.get()).streamTags().toList()) {
+					if (blockTagKey.id().equals(id))
+						return true;
 				}
 			} else {
 				if (Registry.BLOCK.getId(state.getBlock()).equals(new Identifier(value))) {
@@ -291,10 +293,13 @@ public class ChimeClient implements ClientModInitializer {
 			if (hit != null) {
 				if (value.startsWith("#")) {
 					Identifier id = new Identifier(value.substring(1));
-					
-					Tag<EntityType<?>> tag = EntityTypeTags.getTagGroup().getTag(id);
-					if (tag != null && tag.contains(hit.getType())) {
-						return true;
+
+					Registry<EntityType<?>> entityTypeRegistry = world.getRegistryManager().get(Registry.ENTITY_TYPE_KEY);
+					Optional<RegistryKey<EntityType<?>>> key = entityTypeRegistry.getKey(hit.getType());
+
+					for (TagKey<EntityType<?>> entityTypeTagKey : entityTypeRegistry.entryOf(key.get()).streamTags().toList()) {
+						if (entityTypeTagKey.id().equals(id))
+							return true;
 					}
 				} else {
 					if (EntityType.getId(hit.getType()).equals(new Identifier(value))) {
@@ -347,7 +352,7 @@ public class ChimeClient implements ClientModInitializer {
 			e = stack.getHolder();
 		}
 		if (world != null && e != null) {
-			return world.getBiome(e.getBlockPos());
+			return world.getBiome(e.getBlockPos()).value();
 		}
 		return null;
 	}
