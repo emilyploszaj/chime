@@ -56,7 +56,7 @@ public class ChimeArmorOverrideLoader implements SimpleResourceReloadListener<Ma
 		ModelOverride.Deserializer deserializer = new Deserializer2();
 
 		Map<Identifier, List<ModelOverride>> map = new HashMap<>();
-		for (Identifier id : manager.findResources("overrides/armor", path -> path.endsWith(".json"))) {
+		for (Identifier id : manager.findResources("overrides/armor", path -> path.toString().endsWith(".json")).keySet()) {
 			String[] parts = id.getPath().split("/");
 			String name = parts[parts.length - 1];
 			name = name.substring(0, name.length() - 5);
@@ -79,7 +79,7 @@ public class ChimeArmorOverrideLoader implements SimpleResourceReloadListener<Ma
 							list.add(override);
 						}
 					} catch (Exception e) {
-						LogManager.getLogger("chime").warn("[chime] Malformed json for armor override: " + r.getId(), e);
+						LogManager.getLogger("chime").warn("[chime] Malformed json for armor override: " + id, e);
 					}
 				}
 			} catch (Exception e) {

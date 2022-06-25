@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '0.10-SNAPSHOT'
+	id 'fabric-loom' version '0.12-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -11,7 +11,7 @@ version = project.mod_version
 group = project.maven_group
 
 loom {
-	accessWidener = file("src/main/resources/chime.accesswidener")
+	accessWidenerPath = file("src/main/resources/chime.accesswidener")
 }
 
 dependencies {

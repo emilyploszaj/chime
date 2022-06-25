@@ -71,7 +71,7 @@ public class JsonUnbakedModelMixin {
 			}
 			Identifier baseId = new Identifier(id);
 			Identifier path = new Identifier(baseId.getNamespace(), "overrides/" + baseId.getPath() + ".json");
-			if (manager.containsResource(path)) {
+			if (manager.getResource(path).isPresent()) {
 				for (Resource r : manager.getAllResources(path)) {
 					try (InputStreamReader reader = new InputStreamReader(r.getInputStream())) {
 						JsonObject object = GSON.fromJson(reader, JsonObject.class);
@@ -82,7 +82,7 @@ public class JsonUnbakedModelMixin {
 							overrides.add(override);
 						}
 					} catch (Exception e) {
-						LogManager.getLogger("chime").warn("[chime] Malformed json for item override: " + r.getId(), e);
+						LogManager.getLogger("chime").warn("[chime] Malformed json for item override: " + path, e);
 					}
 				}
 			}
