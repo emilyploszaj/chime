@@ -40,7 +40,9 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.LightType;
+import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.dimension.DimensionTypes;
 
 import java.util.Map;
 import java.util.Optional;
@@ -92,9 +94,9 @@ public class ChimeClient implements ClientModInitializer {
 		});
 		register("name", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
 			if (value.startsWith("/") && value.endsWith("/")) {
-				return Pattern.matches(value.substring(1, value.length() - 1), stack.getName().asString());
+				return Pattern.matches(value.substring(1, value.length() - 1), stack.getName().getString());
 			} else {
-				return value.equals(stack.getName().asString());
+				return value.equals(stack.getName().getString());
 			}
 		});
 		register("hash", HashPredicate.class, (ItemStack stack, ClientWorld world, LivingEntity entity, HashPredicate value) -> {
@@ -110,22 +112,22 @@ public class ChimeClient implements ClientModInitializer {
 			return world != null && world.getDimension().hasCeiling() == value;
 		});
 		register("dimension/ultrawarm", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
-			return world != null && world.getDimension().isUltrawarm() == value;
+			return world != null && world.getDimension().ultrawarm() == value;
 		});
 		register("dimension/natural", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
-			return world != null && world.getDimension().isNatural() == value;
+			return world != null && world.getDimension().natural() == value;
 		});
 		register("dimension/has_ender_dragon_fight", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
-			return world != null && world.getDimension().hasEnderDragonFight() == value;
+			return world != null && world.getDimensionEntry().matchesKey(DimensionTypes.THE_END) == value;
 		});
 		register("dimension/piglin_safe", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
-			return world != null && world.getDimension().isPiglinSafe() == value;
+			return world != null && world.getDimension().piglinSafe() == value;
 		});
 		register("dimension/bed_works", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
-			return world != null && world.getDimension().isBedWorking() == value;
+			return world != null && world.getDimension().bedWorks() == value;
 		});
 		register("dimension/respawn_anchor_works", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
-			return world != null && world.getDimension().isRespawnAnchorWorking() == value;
+			return world != null && world.getDimension().respawnAnchorWorks() == value;
 		});
 		register("dimension/has_raids", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
 			return world != null && world.getDimension().hasRaids() == value;
