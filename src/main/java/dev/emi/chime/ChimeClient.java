@@ -1,5 +1,9 @@
 package dev.emi.chime;
 
+import java.util.Map;
+import java.util.Optional;
+import java.util.regex.Pattern;
+
 import com.google.common.collect.BoundType;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
@@ -7,6 +11,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+
 import dev.emi.chime.override.ChimeArmorOverrideLoader;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.block.Block;
@@ -29,23 +34,21 @@ import net.minecraft.nbt.NbtLong;
 import net.minecraft.nbt.NbtShort;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.nbt.StringNbtReader;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.resource.ReloadableResourceManagerImpl;
-import net.minecraft.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.LightType;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.dimension.DimensionTypes;
-
-import java.util.Map;
-import java.util.Optional;
-import java.util.regex.Pattern;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class ChimeClient implements ClientModInitializer {
@@ -140,7 +143,7 @@ public class ChimeClient implements ClientModInitializer {
 		register("world/biome/id", Identifier.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Identifier value) -> {
 			Biome biome = getBiome(stack, world, entity);
 			if (biome != null) {
-				return world.getRegistryManager().get(Registry.BIOME_KEY).getId(biome).equals(value);
+				return world.getRegistryManager().get(RegistryKeys.BIOME).getId(biome).equals(value);
 			}
 			return false;
 		});
@@ -271,7 +274,7 @@ public class ChimeClient implements ClientModInitializer {
 			if (value.startsWith("#")) {
 				Identifier id = new Identifier(value.substring(1));
 
-				Registry<Block> blockRegistry = world.getRegistryManager().get(Registry.BLOCK_KEY);
+				Registry<Block> blockRegistry = world.getRegistryManager().get(RegistryKeys.BLOCK);
 				Optional<RegistryKey<Block>> key = blockRegistry.getKey(state.getBlock());
 
 				for (TagKey<Block> blockTagKey : blockRegistry.entryOf(key.get()).streamTags().toList()) {
@@ -279,7 +282,7 @@ public class ChimeClient implements ClientModInitializer {
 						return true;
 				}
 			} else {
-				if (Registry.BLOCK.getId(state.getBlock()).equals(new Identifier(value))) {
+				if (Registries.BLOCK.getId(state.getBlock()).equals(new Identifier(value))) {
 					return true;
 				}
 			}
@@ -295,7 +298,7 @@ public class ChimeClient implements ClientModInitializer {
 				if (value.startsWith("#")) {
 					Identifier id = new Identifier(value.substring(1));
 
-					Registry<EntityType<?>> entityTypeRegistry = world.getRegistryManager().get(Registry.ENTITY_TYPE_KEY);
+					Registry<EntityType<?>> entityTypeRegistry = world.getRegistryManager().get(RegistryKeys.ENTITY_TYPE);
 					Optional<RegistryKey<EntityType<?>>> key = entityTypeRegistry.getKey(hit.getType());
 
 					for (TagKey<EntityType<?>> entityTypeTagKey : entityTypeRegistry.entryOf(key.get()).streamTags().toList()) {
