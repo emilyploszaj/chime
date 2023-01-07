@@ -23,16 +23,16 @@ import net.minecraft.util.Identifier;
 
 @Mixin(ModelOverride.Deserializer.class)
 public class ModelOverrideDeserializerMixin {
-	private Map<String, Object> customPredicates;
+	private ThreadLocal<Map<String, Object>> customPredicates = new ThreadLocal<>();
 	
 	@Inject(at = @At("RETURN"), method = "deserialize", cancellable = true)
 	public void deserialize(JsonElement element, Type type, JsonDeserializationContext context, CallbackInfoReturnable<ModelOverride> info) throws JsonParseException {
-		((ModelOverrideWrapper) info.getReturnValue()).setCustomPredicates(customPredicates);
+		((ModelOverrideWrapper) info.getReturnValue()).setCustomPredicates(customPredicates.get());
 	}
 
 	@Inject(at = @At("HEAD"), method = "deserializeMinPropertyValues")
 	private void deserializeMinPropertyValues(JsonObject object, CallbackInfoReturnable<Map<Identifier, Float>> info) {
-		customPredicates = Maps.newHashMap();
+		customPredicates.set(Maps.newHashMap());
 		JsonObject pred = object.getAsJsonObject("predicate");
 		parseCustomPredicates(pred, "");
 	}
@@ -51,7 +51,7 @@ public class ModelOverrideDeserializerMixin {
 				}
 			} else {
 				if (ChimeClient.CUSTOM_MODEL_PREDICATES.containsKey(newPath)) {
-					customPredicates.put(newPath, ChimeClient.CUSTOM_MODEL_PREDICATES.get(newPath).parseType(entry.getValue()));
+					customPredicates.get().put(newPath, ChimeClient.CUSTOM_MODEL_PREDICATES.get(newPath).parseType(entry.getValue()));
 					if (path.length() == 0) {
 						toRemove.add(entry.getKey());
 					}

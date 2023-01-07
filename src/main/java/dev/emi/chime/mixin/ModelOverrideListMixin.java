@@ -28,10 +28,10 @@ public class ModelOverrideListMixin {
     private BakedOverride[] overrides;
 
 	@Inject(at = @At("RETURN"), method = "<init>(Lnet/minecraft/client/render/model/Baker;Lnet/minecraft/client/render/model/json/JsonUnbakedModel;Ljava/util/List;)V")
-	private void init(Baker baker, JsonUnbakedModel parent,	List<ModelOverride> overrides, CallbackInfo info) {
+	private void init(Baker baker, JsonUnbakedModel parent,	List<ModelOverride> list, CallbackInfo info) {
 		for (int i = 0; i < this.overrides.length; i++) {
 			((ModelOverrideWrapper) this.overrides[i]).setCustomPredicates(
-				((ModelOverrideWrapper) overrides.get(overrides.size() - i - 1)).getCustomPredicates());
+				((ModelOverrideWrapper) (list.get(list.size() - i - 1))).getCustomPredicates());
 		}
 	}
 	
