@@ -1,0 +1,46 @@
+{
+  "mappings": {
+    "dev/emi/chime/mixin/ArmorFeatureRendererMixin": {
+      "getArmorTexture": "Lnet/minecraft/class_970;method_4174(Lnet/minecraft/class_1738;ZLjava/lang/String;)Lnet/minecraft/class_2960;",
+      "renderArmor": "Lnet/minecraft/class_970;method_4169(Lnet/minecraft/class_4587;Lnet/minecraft/class_4597;Lnet/minecraft/class_1309;Lnet/minecraft/class_1304;ILnet/minecraft/class_572;)V"
+    },
+    "dev/emi/chime/mixin/BakedModelOverrideMixin": {
+      "test": "Lnet/minecraft/class_806$class_5827;method_33700([F)Z"
+    },
+    "dev/emi/chime/mixin/JsonUnbakedModelMixin": {
+      "compileOverrides": "Lnet/minecraft/class_793;method_3440(Lnet/minecraft/class_7775;Lnet/minecraft/class_793;)Lnet/minecraft/class_806;",
+      "getModelDependencies": "Lnet/minecraft/class_793;method_4755()Ljava/util/Collection;"
+    },
+    "dev/emi/chime/mixin/ModelOverrideDeserializerMixin": {
+      "deserialize": "Lnet/minecraft/class_799$class_800;method_3475(Lcom/google/gson/JsonElement;Ljava/lang/reflect/Type;Lcom/google/gson/JsonDeserializationContext;)Lnet/minecraft/class_799;",
+      "deserializeMinPropertyValues": "Lnet/minecraft/class_799$class_800;method_3474(Lcom/google/gson/JsonObject;)Ljava/util/List;"
+    },
+    "dev/emi/chime/mixin/ModelOverrideListMixin": {
+      "<init>(Lnet/minecraft/client/render/model/Baker;Lnet/minecraft/client/render/model/json/JsonUnbakedModel;Ljava/util/List;)V": "Lnet/minecraft/class_806;<init>(Lnet/minecraft/class_7775;Lnet/minecraft/class_793;Ljava/util/List;)V",
+      "apply": "Lnet/minecraft/class_806;method_3495(Lnet/minecraft/class_1087;Lnet/minecraft/class_1799;Lnet/minecraft/class_638;Lnet/minecraft/class_1309;I)Lnet/minecraft/class_1087;"
+    }
+  },
+  "data": {
+    "named:intermediary": {
+      "dev/emi/chime/mixin/ArmorFeatureRendererMixin": {
+        "getArmorTexture": "Lnet/minecraft/class_970;method_4174(Lnet/minecraft/class_1738;ZLjava/lang/String;)Lnet/minecraft/class_2960;",
+        "renderArmor": "Lnet/minecraft/class_970;method_4169(Lnet/minecraft/class_4587;Lnet/minecraft/class_4597;Lnet/minecraft/class_1309;Lnet/minecraft/class_1304;ILnet/minecraft/class_572;)V"
+      },
+      "dev/emi/chime/mixin/BakedModelOverrideMixin": {
+        "test": "Lnet/minecraft/class_806$class_5827;method_33700([F)Z"
+      },
+      "dev/emi/chime/mixin/JsonUnbakedModelMixin": {
+        "compileOverrides": "Lnet/minecraft/class_793;method_3440(Lnet/minecraft/class_7775;Lnet/minecraft/class_793;)Lnet/minecraft/class_806;",
+        "getModelDependencies": "Lnet/minecraft/class_793;method_4755()Ljava/util/Collection;"
+      },
+      "dev/emi/chime/mixin/ModelOverrideDeserializerMixin": {
+        "deserialize": "Lnet/minecraft/class_799$class_800;method_3475(Lcom/google/gson/JsonElement;Ljava/lang/reflect/Type;Lcom/google/gson/JsonDeserializationContext;)Lnet/minecraft/class_799;",
+        "deserializeMinPropertyValues": "Lnet/minecraft/class_799$class_800;method_3474(Lcom/google/gson/JsonObject;)Ljava/util/List;"
+      },
+      "dev/emi/chime/mixin/ModelOverrideListMixin": {
+        "<init>(Lnet/minecraft/client/render/model/Baker;Lnet/minecraft/client/render/model/json/JsonUnbakedModel;Ljava/util/List;)V": "Lnet/minecraft/class_806;<init>(Lnet/minecraft/class_7775;Lnet/minecraft/class_793;Ljava/util/List;)V",
+        "apply": "Lnet/minecraft/class_806;method_3495(Lnet/minecraft/class_1087;Lnet/minecraft/class_1799;Lnet/minecraft/class_638;Lnet/minecraft/class_1309;I)Lnet/minecraft/class_1087;"
+      }
+    }
+  }
+}

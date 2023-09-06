@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "package": "dev.emi.chime.mixin",
+  "compatibilityLevel": "JAVA_16",
+  "mixins": [],
+  "client": [
+    "ModelOverrideMixin",
+    "ModelOverrideDeserializerMixin",
+    "ArmorFeatureRendererMixin",
+    "JsonUnbakedModelMixin",
+    "BakedModelOverrideMixin",
+    "ModelOverrideListMixin"
+  ],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "refmap": "chime-refmap.json"
+}
