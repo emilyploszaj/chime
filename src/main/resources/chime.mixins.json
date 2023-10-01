@@ -2,16 +2,15 @@
   "required": true,
   "package": "dev.emi.chime.mixin",
   "compatibilityLevel": "JAVA_16",
-  "mixins": [
-    "BiomeAccessor"
-  ],
+  "mixins": [],
   "client": [
     "ArmorFeatureRendererMixin",
     "BakedModelOverrideMixin",
     "JsonUnbakedModelMixin",
     "ModelOverrideDeserializerMixin",
     "ModelOverrideListMixin",
-    "ModelOverrideMixin"
+    "ModelOverrideMixin",
+    "BiomeAccessor"
   ],
   "server": [],
   "injectors": {
