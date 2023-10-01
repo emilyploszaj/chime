@@ -65,9 +65,7 @@ public class ChimeClient implements ClientModInitializer {
                             .matches(ChimeClient.cachedStack, ChimeClient.cachedWorld, ChimeClient.cachedLivingEntity, entry.getValue())) {
                         return false;
                     }
-                } else {
-                    return false;
-                }
+                } else return false;
             }
         }
         return true;
@@ -79,7 +77,7 @@ public class ChimeClient implements ClientModInitializer {
         register("durability", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) ->
                 value.contains((float) stack.getDamage()));
         register("nbt", JsonObject.class, (ItemStack stack, ClientWorld world, LivingEntity entity, JsonObject value) ->
-            stack.hasNbt() && matchesJsonObject(value, stack.getNbt()));
+                stack.hasNbt() && matchesJsonObject(value, stack.getNbt()));
         register("name", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
             if (value.startsWith("/") && value.endsWith("/")) {
                 return Pattern.matches(value.substring(1, value.length() - 1), stack.getName().getString());
@@ -119,31 +117,18 @@ public class ChimeClient implements ClientModInitializer {
         });
         register("world/biome/precipitation", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
             Biome biome = getBiome(stack, world, entity);
-            if (biome != null) {
-                return biome.getPrecipitation(entity.getBlockPos()).name().equals(value);
-            }
-            return false;
+            return (biome != null) && biome.getPrecipitation(entity.getBlockPos()).name().equals(value);
         });
         register("world/biome/temperature", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
             Biome biome = getBiome(stack, world, entity);
-            if (biome != null) {
-                return value.contains(biome.getTemperature());
-            }
-            return false;
+            return biome != null && value.contains(biome.getTemperature());
         });
         register("world/biome/downfall", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
             Biome biome = getBiome(stack, world, entity);
-            if (biome != null) {
-                return value.contains(((BiomeAccessor)(Object)biome).getWeather().downfall()); // getDownfall() not fixed
-            }
-            return false;
+            return (biome != null) && value.contains(((BiomeAccessor) (Object) biome).getWeather().downfall());
         });
-        register("entity/nbt", JsonObject.class, (ItemStack stack, ClientWorld world, LivingEntity entity, JsonObject value) -> {
-            if (entity != null) {
-                return matchesJsonObject(value, entity.writeNbt(new NbtCompound()));
-            }
-            return false;
-        });
+        register("entity/nbt", JsonObject.class, (ItemStack stack, ClientWorld world, LivingEntity entity, JsonObject value) ->
+                (entity != null) && matchesJsonObject(value, entity.writeNbt(new NbtCompound())));
         register("entity/x", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) ->
                 entity != null && ((Range<Float>) value).contains((float) entity.getZ()));
         register("entity/y", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) ->
@@ -152,30 +137,22 @@ public class ChimeClient implements ClientModInitializer {
                 entity != null && ((Range<Float>) value).contains((float) entity.getZ()));
         register("entity/light", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
             Entity e = entity;
-            if (e == null) {
-                e = stack.getHolder();
-            }
+            if (e == null) e = stack.getHolder();
             return e != null && value.contains((float) world.getLightLevel(e.getBlockPos()));
         });
         register("entity/block_light", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
             Entity e = entity;
-            if (e == null) {
-                e = stack.getHolder();
-            }
+            if (e == null) e = stack.getHolder();
             return e != null && value.contains((float) world.getLightLevel(LightType.BLOCK, e.getBlockPos()));
         });
         register("entity/sky_light", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
             Entity e = entity;
-            if (e == null) {
-                e = stack.getHolder();
-            }
+            if (e == null) e = stack.getHolder();
             return e != null && value.contains((float) world.getLightLevel(LightType.SKY, e.getBlockPos()));
         });
         register("entity/can_see_sky", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
             Entity e = entity;
-            if (e == null) {
-                e = stack.getHolder();
-            }
+            if (e == null) e = stack.getHolder();
             if (e != null) {
                 BlockPos pos = e.getBlockPos();
                 return (world.getTopY(Heightmap.Type.MOTION_BLOCKING, pos.getX(), pos.getZ()) <= e.getEyeY()) == value;
@@ -183,9 +160,7 @@ public class ChimeClient implements ClientModInitializer {
             return false;
         });
         register("entity/hand", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
-            if (entity == null) {
-                return false;
-            }
+            if (entity == null) return false;
             boolean main = entity.getMainHandStack() == stack;
             boolean off = entity.getOffHandStack() == stack;
             return switch (value) {
@@ -197,9 +172,7 @@ public class ChimeClient implements ClientModInitializer {
             };
         });
         register("entity/slot", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
-            if (entity == null) {
-                return false;
-            }
+            if (entity == null) return false;
             return switch (value) {
                 case "head" -> entity.getEquippedStack(EquipmentSlot.HEAD) == stack;
                 case "chest" -> entity.getEquippedStack(EquipmentSlot.CHEST) == stack;
@@ -214,13 +187,11 @@ public class ChimeClient implements ClientModInitializer {
                 MinecraftClient client = MinecraftClient.getInstance();
                 if (entity == client.player) {
                     HitResult result = client.crosshairTarget;
-                    if (result.getType() == HitResult.Type.BLOCK) {
-                        s = "block";
-                    } else if (result.getType() == HitResult.Type.ENTITY) {
-                        s = "entity";
-                    } else if (result.getType() == HitResult.Type.MISS) {
-                        s = "miss";
-                    }
+                    s = switch (result.getType()) {
+                        case BLOCK -> "block";
+                        case ENTITY -> "entity";
+                        case MISS -> "miss";
+                    };
                 }
             }
             return value.equals(s);
@@ -238,9 +209,7 @@ public class ChimeClient implements ClientModInitializer {
                         return true;
                 }
             } else {
-                if (Registries.BLOCK.getId(state.getBlock()).equals(new Identifier(value))) {
-                    return true;
-                }
+                return Registries.BLOCK.getId(state.getBlock()).equals(new Identifier(value));
             }
             return false;
         });
@@ -258,23 +227,17 @@ public class ChimeClient implements ClientModInitializer {
                     Optional<RegistryKey<EntityType<?>>> key = entityTypeRegistry.getKey(hit.getType());
 
                     for (TagKey<EntityType<?>> entityTypeTagKey : entityTypeRegistry.entryOf(key.get()).streamTags().toList()) {
-                        if (entityTypeTagKey.id().equals(id))
-                            return true;
+                        if (entityTypeTagKey.id().equals(id)) return true;
                     }
                 } else {
-                    if (EntityType.getId(hit.getType()).equals(new Identifier(value))) {
-                        return true;
-                    }
+                    return EntityType.getId(hit.getType()).equals(new Identifier(value));
                 }
             }
             return false;
         });
         register("entity/target_entity/nbt", JsonObject.class, (ItemStack stack, ClientWorld world, LivingEntity entity, JsonObject value) -> {
             Entity hit = raycastEntity(world, entity);
-            if (hit != null) {
-                return matchesJsonObject(value, hit.writeNbt(new NbtCompound()));
-            }
-            return false;
+            return (hit != null) && matchesJsonObject(value, hit.writeNbt(new NbtCompound()));
         });
     }
 
@@ -308,39 +271,34 @@ public class ChimeClient implements ClientModInitializer {
 
     private static Biome getBiome(ItemStack stack, ClientWorld world, LivingEntity entity) {
         Entity e = entity;
-        if (e == null) {
-            e = stack.getHolder();
-        }
-        if (world != null && e != null) {
-            return world.getBiome(e.getBlockPos()).value();
-        }
+        if (e == null) e = stack.getHolder();
+        if (world != null && e != null) return world.getBiome(e.getBlockPos()).value();
         return null;
     }
 
     private static <T> void register(String key, Class<T> clazz, CustomModelPredicateFunction<T> func) {
-        if (clazz == Float.class) {
+        if (clazz.equals(Float.class)) {
             CUSTOM_MODEL_PREDICATES.put(key, new FloatCustomModelPredicate((CustomModelPredicateFunction<Float>) func));
-        } else if (clazz == Integer.class) {
+        } else if (clazz.equals(Integer.class)) {
             CUSTOM_MODEL_PREDICATES.put(key, new IntegerCustomModelPredicate((CustomModelPredicateFunction<Integer>) func));
-        } else if (clazz == Boolean.class) {
+        } else if (clazz.equals(Boolean.class)) {
             CUSTOM_MODEL_PREDICATES.put(key, new BooleanCustomModelPredicate((CustomModelPredicateFunction<Boolean>) func));
-        } else if (clazz == String.class) {
+        } else if (clazz.equals(String.class)) {
             CUSTOM_MODEL_PREDICATES.put(key, new StringCustomModelPredicate((CustomModelPredicateFunction<String>) func));
-        } else if (clazz == Pattern.class) {
+        } else if (clazz.equals(Pattern.class)) {
             CUSTOM_MODEL_PREDICATES.put(key, new PatternCustomModelPredicate((CustomModelPredicateFunction<Pattern>) func));
-        } else if (clazz == NbtCompound.class) {
+        } else if (clazz.equals(NbtCompound.class)) {
             CUSTOM_MODEL_PREDICATES.put(key, new NbtCompoundCustomModelPredicate((CustomModelPredicateFunction<NbtCompound>) func));
-        } else if (clazz == Identifier.class) {
+        } else if (clazz.equals(Identifier.class)) {
             CUSTOM_MODEL_PREDICATES.put(key, new IdentifierCustomModelPredicate((CustomModelPredicateFunction<Identifier>) func));
-        } else if (clazz == Range.class) {
+        } else if (clazz.equals(Range.class)) {
             CUSTOM_MODEL_PREDICATES.put(key, new FloatRangeCustomModelPredicate((CustomModelPredicateFunction<Range<Float>>) func));
-        } else if (clazz == JsonObject.class) {
+        } else if (clazz.equals(JsonObject.class)) {
             CUSTOM_MODEL_PREDICATES.put(key, new JsonObjectCustomModelPredicate((CustomModelPredicateFunction<JsonObject>) func));
-        } else if (clazz == HashPredicate.class) {
+        } else if (clazz.equals(HashPredicate.class)) {
             CUSTOM_MODEL_PREDICATES.put(key, new HashPredicateCustomModelPredicate((CustomModelPredicateFunction<HashPredicate>) func));
-        } else {
-            throw new UnsupportedOperationException();
-        }
+        } else throw new UnsupportedOperationException();
+
     }
 
     private static boolean matchesJsonObject(JsonObject object, NbtCompound tag) {
@@ -348,13 +306,9 @@ public class ChimeClient implements ClientModInitializer {
             String key = entry.getKey();
             JsonElement element = entry.getValue();
             if (element.isJsonNull()) {
-                if (tag.contains(key)) {
-                    return false;
-                }
-            } else {
-                if (!tag.contains(key) || !matchesJsonElement(element, tag.get(key))) {
-                    return false;
-                }
+                if (tag.contains(key)) return false;
+            } else if (!tag.contains(key) || !matchesJsonElement(element, tag.get(key))) {
+                return false;
             }
         }
         return true;
@@ -387,10 +341,7 @@ public class ChimeClient implements ClientModInitializer {
         } else {
             JsonPrimitive primitive = element.getAsJsonPrimitive();
             if (tag instanceof AbstractNbtNumber number) {
-                boolean isInt = false;
-                if (tag instanceof NbtByte || tag instanceof NbtShort || tag instanceof NbtInt || tag instanceof NbtLong) {
-                    isInt = true;
-                }
+                boolean isInt = tag instanceof NbtByte || tag instanceof NbtShort || tag instanceof NbtInt || tag instanceof NbtLong;
                 if (primitive.isBoolean()) {
                     return isInt && primitive.getAsBoolean() == (number.intValue() == 1);
                 } else if (primitive.isNumber()) {
@@ -453,13 +404,10 @@ public class ChimeClient implements ClientModInitializer {
     }
 
     private static <T extends Comparable> T parseNumber(Class<T> clazz, String s) {
-        if (clazz == Double.class) {
-            return (T) Double.valueOf(s);
-        } else if (clazz == Float.class) {
-            return (T) Float.valueOf(s);
-        } else if (clazz == Long.class) {
-            return (T) Long.valueOf(s);
-        }
+        if (clazz == Double.class) return (T) Double.valueOf(s);
+        else if (clazz == Float.class) return (T) Float.valueOf(s);
+        else if (clazz == Long.class) return (T) Long.valueOf(s);
+
         throw new UnsupportedOperationException();
     }
 
