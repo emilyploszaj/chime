@@ -117,7 +117,10 @@ public class ChimeClient implements ClientModInitializer {
         });
         register("world/biome/precipitation", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
             Biome biome = getBiome(stack, world, entity);
-            return (biome != null) && biome.getPrecipitation(entity.getBlockPos()).name().equals(value);
+            Entity e = entity;
+            if (e == null) e = stack.getHolder();
+            return (biome != null && e != null) && biome.getPrecipitation(e.getBlockPos()).name().toLowerCase().equals(value);
+
         });
         register("world/biome/temperature", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
             Biome biome = getBiome(stack, world, entity);
@@ -130,7 +133,7 @@ public class ChimeClient implements ClientModInitializer {
         register("entity/nbt", JsonObject.class, (ItemStack stack, ClientWorld world, LivingEntity entity, JsonObject value) ->
                 (entity != null) && matchesJsonObject(value, entity.writeNbt(new NbtCompound())));
         register("entity/x", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) ->
-                entity != null && ((Range<Float>) value).contains((float) entity.getZ()));
+                entity != null && ((Range<Float>) value).contains((float) entity.getX()));
         register("entity/y", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) ->
                 entity != null && ((Range<Float>) value).contains((float) entity.getY()));
         register("entity/z", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) ->
