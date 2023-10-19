@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(Biome.class)
 public interface BiomeAccessor {
-    @Accessor
-    Biome.Weather getWeather();
+	@Accessor
+	Biome.Weather getWeather();
 }
 
