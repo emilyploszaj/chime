@@ -363,7 +363,6 @@ public class ChimeClient implements ClientModInitializer {
 		} else {
 			throw new UnsupportedOperationException();
 		}
-
 	}
 
 	private static boolean matchesJsonObject(JsonObject object, NbtCompound tag) {
@@ -606,7 +605,7 @@ public class ChimeClient implements ClientModInitializer {
 		public NbtCompound parseType(JsonElement element) {
 			try {
 				return StringNbtReader.parse(element.getAsString());
-			} catch (Exception e) {
+			} catch(Exception e) {
 				return null;
 			}
 		}
@@ -685,7 +684,7 @@ public class ChimeClient implements ClientModInitializer {
 					i += modulo;
 				}
 				return value.contains((float) i);
-			} catch (Exception ignored) {
+			} catch (Exception e) {
 			}
 			return value.contains(-1f);
 		}
