@@ -134,7 +134,10 @@ public class ChimeClient implements ClientModInitializer {
 		});
 		register("world/biome/id", Identifier.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Identifier value) -> {
 			Biome biome = getBiome(stack, world, entity);
-			return biome != null && world.getRegistryManager().get(RegistryKeys.BIOME).getId(biome).equals(value);
+			if (biome != null) {
+				return world.getRegistryManager().get(RegistryKeys.BIOME).getId(biome).equals(value);
+			}
+			return false;
 		});
 		register("world/biome/precipitation", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
 			Biome biome = getBiome(stack, world, entity);
@@ -142,7 +145,10 @@ public class ChimeClient implements ClientModInitializer {
 			if (e == null) {
 				e = stack.getHolder();
 			}
-			return (biome != null && e != null) && biome.getPrecipitation(e.getBlockPos()).name().toLowerCase().equals(value);
+			if (biome != null && e != null) {
+				return biome.getPrecipitation(e.getBlockPos()).name().toLowerCase().equals(value);
+			}
+			return false;
 
 		});
 		register("world/biome/temperature", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
