@@ -149,7 +149,6 @@ public class ChimeClient implements ClientModInitializer {
 				return biome.getPrecipitation(e.getBlockPos()).name().toLowerCase().equals(value);
 			}
 			return false;
-
 		});
 		register("world/biome/temperature", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
 			Biome biome = getBiome(stack, world, entity);
