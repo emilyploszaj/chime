@@ -36,12 +36,16 @@ public class ChimeArmorOverrideLoader implements SimpleResourceReloadListener<Ma
 
 	@Override
 	public CompletableFuture<Map<Identifier, List<ModelOverride>>> load(ResourceManager manager, Profiler profiler, Executor executor) {
-		return CompletableFuture.supplyAsync(() -> loadOverrides(manager));
+		return CompletableFuture.supplyAsync(() -> {
+			return loadOverrides(manager);
+		});
 	}
 
 	@Override
 	public CompletableFuture<Void> apply(Map<Identifier, List<ModelOverride>> map, ResourceManager manager, Profiler profiler, Executor executor) {
-		return CompletableFuture.runAsync(() -> applyOverrides(map));
+		return CompletableFuture.runAsync(() -> {
+			applyOverrides(map);
+		});
 	}
 	
 	public static void firstLoad() {
