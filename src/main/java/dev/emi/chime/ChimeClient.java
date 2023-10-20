@@ -1,5 +1,9 @@
 package dev.emi.chime;
 
+import java.util.Map;
+import java.util.Optional;
+import java.util.regex.Pattern;
+
 import com.google.common.collect.BoundType;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
@@ -7,6 +11,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+
 import dev.emi.chime.mixin.BiomeAccessor;
 import dev.emi.chime.override.ChimeArmorOverrideLoader;
 import net.fabricmc.api.ClientModInitializer;
@@ -37,10 +42,6 @@ import net.minecraft.world.LightType;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.dimension.DimensionTypes;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.regex.Pattern;
-
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class ChimeClient implements ClientModInitializer {
 	public static ItemStack cachedStack = ItemStack.EMPTY;
@@ -64,19 +65,27 @@ public class ChimeClient implements ClientModInitializer {
 							.matches(ChimeClient.cachedStack, ChimeClient.cachedWorld, ChimeClient.cachedLivingEntity, entry.getValue())) {
 						return false;
 					}
-				} else return false;
+				} else {
+					return false;
+				}
 			}
 		}
 		return true;
 	}
 
 	static {
-		register("count", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) ->
-				value.contains((float) stack.getCount()));
-		register("durability", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) ->
-				value.contains((float) stack.getDamage()));
-		register("nbt", JsonObject.class, (ItemStack stack, ClientWorld world, LivingEntity entity, JsonObject value) ->
-				stack.hasNbt() && matchesJsonObject(value, stack.getNbt()));
+		register("count", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
+			return value.contains((float) stack.getCount());
+		});
+		register("durability", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
+			return value.contains((float) stack.getDamage());
+		});
+		register("nbt", JsonObject.class, (ItemStack stack, ClientWorld world, LivingEntity entity, JsonObject value) -> {
+			if (stack.hasNbt()) {
+				return matchesJsonObject(value, stack.getNbt());
+			}
+			return false;
+		});
 		register("name", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
 			if (value.startsWith("/") && value.endsWith("/")) {
 				return Pattern.matches(value.substring(1, value.length() - 1), stack.getName().getString());
@@ -84,32 +93,45 @@ public class ChimeClient implements ClientModInitializer {
 				return value.equals(stack.getName().getString());
 			}
 		});
-		register("hash", HashPredicate.class, (ItemStack stack, ClientWorld world, LivingEntity entity, HashPredicate value) ->
-				value.matches(stack.getNbt()));
-		register("dimension/id", Identifier.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Identifier value) ->
-				world != null && world.getRegistryKey().getValue().equals(value));
-		register("dimension/has_sky_light", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) ->
-				world != null && world.getDimension().hasSkyLight() == value);
-		register("dimension/has_ceiling", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) ->
-				world != null && world.getDimension().hasCeiling() == value);
-		register("dimension/ultrawarm", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) ->
-				world != null && world.getDimension().ultrawarm() == value);
-		register("dimension/natural", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) ->
-				world != null && world.getDimension().natural() == value);
-		register("dimension/has_ender_dragon_fight", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) ->
-				world != null && world.getDimensionEntry().matchesKey(DimensionTypes.THE_END) == value);
-		register("dimension/piglin_safe", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) ->
-				world != null && world.getDimension().piglinSafe() == value);
-		register("dimension/bed_works", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) ->
-				world != null && world.getDimension().bedWorks() == value);
-		register("dimension/respawn_anchor_works", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) ->
-				world != null && world.getDimension().respawnAnchorWorks() == value);
-		register("dimension/has_raids", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) ->
-				world != null && world.getDimension().hasRaids() == value);
-		register("world/raining", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) ->
-				world != null && world.isRaining() == value);
-		register("world/thundering", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) ->
-				world != null && world.isThundering() == value);
+		register("hash", HashPredicate.class, (ItemStack stack, ClientWorld world, LivingEntity entity, HashPredicate value) -> {
+			return value.matches(stack.getNbt());
+		});
+		register("dimension/id", Identifier.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Identifier value) -> {
+			return world != null && world.getRegistryKey().getValue().equals(value);
+		});
+		register("dimension/has_sky_light", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
+			return world != null && world.getDimension().hasSkyLight() == value;
+		});
+		register("dimension/has_ceiling", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
+			return world != null && world.getDimension().hasCeiling() == value;
+		});
+		register("dimension/ultrawarm", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
+			return world != null && world.getDimension().ultrawarm() == value;
+		});
+		register("dimension/natural", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
+			return world != null && world.getDimension().natural() == value;
+		});
+		register("dimension/has_ender_dragon_fight", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
+			return world != null && world.getDimensionEntry().matchesKey(DimensionTypes.THE_END) == value;
+		});
+		register("dimension/piglin_safe", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
+			return world != null && world.getDimension().piglinSafe() == value;
+		});
+		register("dimension/bed_works", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
+			return world != null && world.getDimension().bedWorks() == value;
+		});
+		register("dimension/respawn_anchor_works", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
+			return world != null && world.getDimension().respawnAnchorWorks() == value;
+		});
+		register("dimension/has_raids", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
+			return world != null && world.getDimension().hasRaids() == value;
+		});
+		register("world/raining", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
+			return world != null && world.isRaining() == value.booleanValue();
+		});
+		register("world/thundering", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
+			return world != null && world.isThundering() == value;
+		});
 		register("world/biome/id", Identifier.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Identifier value) -> {
 			Biome biome = getBiome(stack, world, entity);
 			return biome != null && world.getRegistryManager().get(RegistryKeys.BIOME).getId(biome).equals(value);
@@ -117,44 +139,67 @@ public class ChimeClient implements ClientModInitializer {
 		register("world/biome/precipitation", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
 			Biome biome = getBiome(stack, world, entity);
 			Entity e = entity;
-			if (e == null) e = stack.getHolder();
+			if (e == null) {
+				e = stack.getHolder();
+			}
 			return (biome != null && e != null) && biome.getPrecipitation(e.getBlockPos()).name().toLowerCase().equals(value);
 
 		});
 		register("world/biome/temperature", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
 			Biome biome = getBiome(stack, world, entity);
-			return biome != null && value.contains(biome.getTemperature());
+			if (biome != null) {
+				return value.contains(biome.getTemperature());
+			}
+			return false;
 		});
 		register("world/biome/downfall", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
 			Biome biome = getBiome(stack, world, entity);
-			return (biome != null) && value.contains(((BiomeAccessor) (Object) biome).getWeather().downfall());
+			if (biome != null) {
+				return value.contains(((BiomeAccessor) (Object) biome).getWeather().downfall());
+			}
+			return false;
 		});
-		register("entity/nbt", JsonObject.class, (ItemStack stack, ClientWorld world, LivingEntity entity, JsonObject value) ->
-				(entity != null) && matchesJsonObject(value, entity.writeNbt(new NbtCompound())));
-		register("entity/x", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) ->
-				entity != null && ((Range<Float>) value).contains((float) entity.getX()));
-		register("entity/y", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) ->
-				entity != null && ((Range<Float>) value).contains((float) entity.getY()));
-		register("entity/z", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) ->
-				entity != null && ((Range<Float>) value).contains((float) entity.getZ()));
+		register("entity/nbt", JsonObject.class, (ItemStack stack, ClientWorld world, LivingEntity entity, JsonObject value) -> {
+			if (entity != null) {
+				return matchesJsonObject(value, entity.writeNbt(new NbtCompound()));
+			}
+			return false;
+		});
+		register("entity/x", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
+			return entity != null && ((Range<Float>) value).contains((float) entity.getX());
+		});
+		register("entity/y", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
+			return entity != null && ((Range<Float>) value).contains((float) entity.getY());
+		});
+		register("entity/z", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
+			return entity != null && ((Range<Float>) value).contains((float) entity.getZ());
+		});
 		register("entity/light", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
 			Entity e = entity;
-			if (e == null) e = stack.getHolder();
-			return e != null && value.contains((float) world.getLightLevel(e.getBlockPos()));
+			if (e == null) {
+				e = stack.getHolder();
+			}
+			return e != null && value.contains((float) world.getLightLevel(new BlockPos((int) e.getX(), (int) e.getEyeY(), (int) e.getZ())));
 		});
 		register("entity/block_light", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
 			Entity e = entity;
-			if (e == null) e = stack.getHolder();
-			return e != null && value.contains((float) world.getLightLevel(LightType.BLOCK, e.getBlockPos()));
+			if (e == null) {
+				e = stack.getHolder();
+			}
+			return e != null && value.contains((float) world.getLightLevel(LightType.BLOCK, new BlockPos((int) e.getX(), (int) e.getEyeY(), (int) e.getZ())));
 		});
 		register("entity/sky_light", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
 			Entity e = entity;
-			if (e == null) e = stack.getHolder();
-			return e != null && value.contains((float) world.getLightLevel(LightType.SKY, e.getBlockPos()));
+			if (e == null) {
+				e = stack.getHolder();
+			}
+			return e != null && value.contains((float) world.getLightLevel(LightType.SKY, new BlockPos((int) e.getX(), (int) e.getEyeY(), (int) e.getZ())));
 		});
 		register("entity/can_see_sky", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
 			Entity e = entity;
-			if (e == null) e = stack.getHolder();
+			if (e == null) {
+				e = stack.getHolder();
+			}
 			if (e != null) {
 				BlockPos pos = e.getBlockPos();
 				return (world.getTopY(Heightmap.Type.MOTION_BLOCKING, pos.getX(), pos.getZ()) <= e.getEyeY()) == value;
@@ -162,7 +207,9 @@ public class ChimeClient implements ClientModInitializer {
 			return false;
 		});
 		register("entity/hand", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
-			if (entity == null) return false;
+			if (entity == null) {
+				return false;
+			}
 			boolean main = entity.getMainHandStack() == stack;
 			boolean off = entity.getOffHandStack() == stack;
 			return switch (value) {
@@ -174,7 +221,9 @@ public class ChimeClient implements ClientModInitializer {
 			};
 		});
 		register("entity/slot", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
-			if (entity == null) return false;
+			if (entity == null) {
+				return false;
+			}
 			return switch (value) {
 				case "head" -> entity.getEquippedStack(EquipmentSlot.HEAD) == stack;
 				case "chest" -> entity.getEquippedStack(EquipmentSlot.CHEST) == stack;
@@ -211,7 +260,9 @@ public class ChimeClient implements ClientModInitializer {
 						return true;
 				}
 			} else {
-				return Registries.BLOCK.getId(state.getBlock()).equals(new Identifier(value));
+				if (Registries.BLOCK.getId(state.getBlock()).equals(new Identifier(value))) {
+					return true;
+				}
 			}
 			return false;
 		});
@@ -229,17 +280,23 @@ public class ChimeClient implements ClientModInitializer {
 					Optional<RegistryKey<EntityType<?>>> key = entityTypeRegistry.getKey(hit.getType());
 
 					for (TagKey<EntityType<?>> entityTypeTagKey : entityTypeRegistry.entryOf(key.get()).streamTags().toList()) {
-						if (entityTypeTagKey.id().equals(id)) return true;
+						if (entityTypeTagKey.id().equals(id))
+							return true;
 					}
 				} else {
-					return EntityType.getId(hit.getType()).equals(new Identifier(value));
+					if (EntityType.getId(hit.getType()).equals(new Identifier(value))) {
+						return true;
+					}
 				}
 			}
 			return false;
 		});
 		register("entity/target_entity/nbt", JsonObject.class, (ItemStack stack, ClientWorld world, LivingEntity entity, JsonObject value) -> {
 			Entity hit = raycastEntity(world, entity);
-			return (hit != null) && matchesJsonObject(value, hit.writeNbt(new NbtCompound()));
+			if (hit != null) {
+				return matchesJsonObject(value, hit.writeNbt(new NbtCompound()));
+			}
+			return false;
 		});
 	}
 
@@ -273,33 +330,39 @@ public class ChimeClient implements ClientModInitializer {
 
 	private static Biome getBiome(ItemStack stack, ClientWorld world, LivingEntity entity) {
 		Entity e = entity;
-		if (e == null) e = stack.getHolder();
-		if (world != null && e != null) return world.getBiome(e.getBlockPos()).value();
+		if (e == null) {
+			e = stack.getHolder();
+		}
+		if (world != null && e != null) {
+			return world.getBiome(e.getBlockPos()).value();
+		}
 		return null;
 	}
 
 	private static <T> void register(String key, Class<T> clazz, CustomModelPredicateFunction<T> func) {
-		if (clazz.equals(Float.class)) {
+		if (clazz == Float.class) {
 			CUSTOM_MODEL_PREDICATES.put(key, new FloatCustomModelPredicate((CustomModelPredicateFunction<Float>) func));
-		} else if (clazz.equals(Integer.class)) {
+		} else if (clazz == Integer.class) {
 			CUSTOM_MODEL_PREDICATES.put(key, new IntegerCustomModelPredicate((CustomModelPredicateFunction<Integer>) func));
-		} else if (clazz.equals(Boolean.class)) {
+		} else if (clazz == Boolean.class) {
 			CUSTOM_MODEL_PREDICATES.put(key, new BooleanCustomModelPredicate((CustomModelPredicateFunction<Boolean>) func));
-		} else if (clazz.equals(String.class)) {
+		} else if (clazz == String.class) {
 			CUSTOM_MODEL_PREDICATES.put(key, new StringCustomModelPredicate((CustomModelPredicateFunction<String>) func));
-		} else if (clazz.equals(Pattern.class)) {
+		} else if (clazz == Pattern.class) {
 			CUSTOM_MODEL_PREDICATES.put(key, new PatternCustomModelPredicate((CustomModelPredicateFunction<Pattern>) func));
-		} else if (clazz.equals(NbtCompound.class)) {
+		} else if (clazz == NbtCompound.class) {
 			CUSTOM_MODEL_PREDICATES.put(key, new NbtCompoundCustomModelPredicate((CustomModelPredicateFunction<NbtCompound>) func));
-		} else if (clazz.equals(Identifier.class)) {
+		} else if (clazz == Identifier.class) {
 			CUSTOM_MODEL_PREDICATES.put(key, new IdentifierCustomModelPredicate((CustomModelPredicateFunction<Identifier>) func));
-		} else if (clazz.equals(Range.class)) {
+		} else if (clazz == Range.class) {
 			CUSTOM_MODEL_PREDICATES.put(key, new FloatRangeCustomModelPredicate((CustomModelPredicateFunction<Range<Float>>) func));
-		} else if (clazz.equals(JsonObject.class)) {
+		} else if (clazz == JsonObject.class) {
 			CUSTOM_MODEL_PREDICATES.put(key, new JsonObjectCustomModelPredicate((CustomModelPredicateFunction<JsonObject>) func));
-		} else if (clazz.equals(HashPredicate.class)) {
+		} else if (clazz == HashPredicate.class) {
 			CUSTOM_MODEL_PREDICATES.put(key, new HashPredicateCustomModelPredicate((CustomModelPredicateFunction<HashPredicate>) func));
-		} else throw new UnsupportedOperationException();
+		} else {
+			throw new UnsupportedOperationException();
+		}
 
 	}
 
@@ -308,9 +371,13 @@ public class ChimeClient implements ClientModInitializer {
 			String key = entry.getKey();
 			JsonElement element = entry.getValue();
 			if (element.isJsonNull()) {
-				if (tag.contains(key)) return false;
-			} else if (!tag.contains(key) || !matchesJsonElement(element, tag.get(key))) {
-				return false;
+				if (tag.contains(key)) {
+					return false;
+				}
+			} else {
+				if (!tag.contains(key) || !matchesJsonElement(element, tag.get(key))) {
+					return false;
+				}
 			}
 		}
 		return true;
@@ -324,7 +391,8 @@ public class ChimeClient implements ClientModInitializer {
 		outer:
 		for (JsonElement element : array) {
 			for (Object object : list) {
-				if (object instanceof NbtElement tag) {
+				if (object instanceof NbtElement) {
+					NbtElement tag = (NbtElement) object;
 					if (matchesJsonElement(element, tag)) {
 						continue outer;
 					}
@@ -342,8 +410,12 @@ public class ChimeClient implements ClientModInitializer {
 			return tag instanceof AbstractNbtList && matchesJsonArray(element.getAsJsonArray(), (AbstractNbtList) tag);
 		} else {
 			JsonPrimitive primitive = element.getAsJsonPrimitive();
-			if (tag instanceof AbstractNbtNumber number) {
-				boolean isInt = tag instanceof NbtByte || tag instanceof NbtShort || tag instanceof NbtInt || tag instanceof NbtLong;
+			if (tag instanceof AbstractNbtNumber) {
+				AbstractNbtNumber number = (AbstractNbtNumber) tag;
+				boolean isInt = false;
+				if (tag instanceof NbtByte || tag instanceof NbtShort || tag instanceof NbtInt || tag instanceof NbtLong) {
+					isInt = true;
+				}
 				if (primitive.isBoolean()) {
 					return isInt && primitive.getAsBoolean() == (number.intValue() == 1);
 				} else if (primitive.isNumber()) {
@@ -364,7 +436,7 @@ public class ChimeClient implements ClientModInitializer {
 			} else if (tag instanceof NbtString) {
 				if (primitive.isString()) {
 					String prim = primitive.getAsString();
-					String text = tag.asString();
+					String text = ((NbtString) tag).asString();
 					if (prim.startsWith("/") && prim.endsWith("/")) {
 						return Pattern.matches(prim.substring(1, prim.length() - 1), text);
 					} else {
@@ -400,16 +472,19 @@ public class ChimeClient implements ClientModInitializer {
 				}
 			}
 			return Range.singleton(parseNumber(clazz, s));
-		} catch (Exception ignored) {
+		} catch (Exception e) {
 		}
 		return null;
 	}
 
 	private static <T extends Comparable> T parseNumber(Class<T> clazz, String s) {
-		if (clazz == Double.class) return (T) Double.valueOf(s);
-		else if (clazz == Float.class) return (T) Float.valueOf(s);
-		else if (clazz == Long.class) return (T) Long.valueOf(s);
-
+		if (clazz == Double.class) {
+			return (T) Double.valueOf(s);
+		} else if (clazz == Float.class) {
+			return (T) Float.valueOf(s);
+		} else if (clazz == Long.class) {
+			return (T) Long.valueOf(s);
+		}
 		throw new UnsupportedOperationException();
 	}
 
