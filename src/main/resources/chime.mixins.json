@@ -4,12 +4,13 @@
   "compatibilityLevel": "JAVA_16",
   "mixins": [],
   "client": [
-	  "ModelOverrideMixin",
-	  "ModelOverrideDeserializerMixin",
     "ArmorFeatureRendererMixin",
-    "JsonUnbakedModelMixin",
     "BakedModelOverrideMixin",
-    "ModelOverrideListMixin"
+    "JsonUnbakedModelMixin",
+    "ModelOverrideDeserializerMixin",
+    "ModelOverrideListMixin",
+    "ModelOverrideMixin",
+    "BiomeAccessor"
   ],
   "server": [],
   "injectors": {

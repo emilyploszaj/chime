@@ -12,6 +12,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
+import dev.emi.chime.mixin.BiomeAccessor;
 import dev.emi.chime.override.ChimeArmorOverrideLoader;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.block.Block;
@@ -24,16 +25,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.AbstractNbtList;
-import net.minecraft.nbt.AbstractNbtNumber;
-import net.minecraft.nbt.NbtByte;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtInt;
-import net.minecraft.nbt.NbtLong;
-import net.minecraft.nbt.NbtShort;
-import net.minecraft.nbt.NbtString;
-import net.minecraft.nbt.StringNbtReader;
+import net.minecraft.nbt.*;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -149,8 +141,12 @@ public class ChimeClient implements ClientModInitializer {
 		});
 		register("world/biome/precipitation", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
 			Biome biome = getBiome(stack, world, entity);
-			if (biome != null) {
-				return biome.getPrecipitation().getName().equals(value);
+			Entity e = entity;
+			if (e == null) {
+				e = stack.getHolder();
+			}
+			if (biome != null && e != null) {
+				return biome.getPrecipitation(e.getBlockPos()).name().toLowerCase().equals(value);
 			}
 			return false;
 		});
@@ -164,7 +160,7 @@ public class ChimeClient implements ClientModInitializer {
 		register("world/biome/downfall", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
 			Biome biome = getBiome(stack, world, entity);
 			if (biome != null) {
-				return value.contains(biome.getDownfall());
+				return value.contains(((BiomeAccessor) (Object) biome).getWeather().downfall());
 			}
 			return false;
 		});
@@ -175,7 +171,7 @@ public class ChimeClient implements ClientModInitializer {
 			return false;
 		});
 		register("entity/x", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
-			return entity != null && ((Range<Float>) value).contains((float) entity.getZ());
+			return entity != null && ((Range<Float>) value).contains((float) entity.getX());
 		});
 		register("entity/y", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
 			return entity != null && ((Range<Float>) value).contains((float) entity.getY());
@@ -188,21 +184,21 @@ public class ChimeClient implements ClientModInitializer {
 			if (e == null) {
 				e = stack.getHolder();
 			}
-			return e != null && value.contains((float) world.getLightLevel(new BlockPos(e.getX(), e.getEyeY(), e.getZ())));
+			return e != null && value.contains((float) world.getLightLevel(new BlockPos((int) e.getX(), (int) e.getEyeY(), (int) e.getZ())));
 		});
 		register("entity/block_light", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
 			Entity e = entity;
 			if (e == null) {
 				e = stack.getHolder();
 			}
-			return e != null && value.contains((float) world.getLightLevel(LightType.BLOCK, new BlockPos(e.getX(), e.getEyeY(), e.getZ())));
+			return e != null && value.contains((float) world.getLightLevel(LightType.BLOCK, new BlockPos((int) e.getX(), (int) e.getEyeY(), (int) e.getZ())));
 		});
 		register("entity/sky_light", Range.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Range value) -> {
 			Entity e = entity;
 			if (e == null) {
 				e = stack.getHolder();
 			}
-			return e != null && value.contains((float) world.getLightLevel(LightType.SKY, new BlockPos(e.getX(), e.getEyeY(), e.getZ())));
+			return e != null && value.contains((float) world.getLightLevel(LightType.SKY, new BlockPos((int) e.getX(), (int) e.getEyeY(), (int) e.getZ())));
 		});
 		register("entity/can_see_sky", Boolean.class, (ItemStack stack, ClientWorld world, LivingEntity entity, Boolean value) -> {
 			Entity e = entity;
@@ -221,36 +217,25 @@ public class ChimeClient implements ClientModInitializer {
 			}
 			boolean main = entity.getMainHandStack() == stack;
 			boolean off = entity.getOffHandStack() == stack;
-			switch (value) {
-				case "main":
-					return main;
-				case "off":
-					return off;
-				case "either":
-					return main || off;
-				case "neither":
-				case "none":
-					return !(main || off);
-				default:
-					return false;
-			}
+			return switch (value) {
+				case "main" -> main;
+				case "off" -> off;
+				case "either" -> main || off;
+				case "neither", "none" -> !(main || off);
+				default -> false;
+			};
 		});
 		register("entity/slot", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
 			if (entity == null) {
 				return false;
 			}
-			switch (value) {
-				case "head":
-					return entity.getEquippedStack(EquipmentSlot.HEAD) == stack;
-				case "chest":
-					return entity.getEquippedStack(EquipmentSlot.CHEST) == stack;
-				case "legs":
-					return entity.getEquippedStack(EquipmentSlot.LEGS) == stack;
-				case "feet":
-					return entity.getEquippedStack(EquipmentSlot.FEET) == stack;
-				default:
-					return false;
-			}
+			return switch (value) {
+				case "head" -> entity.getEquippedStack(EquipmentSlot.HEAD) == stack;
+				case "chest" -> entity.getEquippedStack(EquipmentSlot.CHEST) == stack;
+				case "legs" -> entity.getEquippedStack(EquipmentSlot.LEGS) == stack;
+				case "feet" -> entity.getEquippedStack(EquipmentSlot.FEET) == stack;
+				default -> false;
+			};
 		});
 		register("entity/target", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
 			String s = "none";
@@ -258,13 +243,11 @@ public class ChimeClient implements ClientModInitializer {
 				MinecraftClient client = MinecraftClient.getInstance();
 				if (entity == client.player) {
 					HitResult result = client.crosshairTarget;
-					if (result.getType() == HitResult.Type.BLOCK) {
-						s = "block";
-					} else if (result.getType() == HitResult.Type.ENTITY) {
-						s = "entity";
-					} else if (result.getType() == HitResult.Type.MISS) {
-						s = "miss";
-					}
+					s = switch (result.getType()) {
+						case BLOCK -> "block";
+						case ENTITY -> "entity";
+						case MISS -> "miss";
+					};
 				}
 			}
 			return value.equals(s);
