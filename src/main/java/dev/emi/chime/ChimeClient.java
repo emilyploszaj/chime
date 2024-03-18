@@ -237,6 +237,16 @@ public class ChimeClient implements ClientModInitializer {
 				default -> false;
 			};
 		});
+		register("entity/name", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
+			if (entity != null && entity.getName() != null) {
+				if (value.startsWith("/") && value.endsWith("/")) {
+					return Pattern.matches(value.substring(1, value.length()-1), entity.getName().getString());
+				} else {
+					return value.equals(entity.getName().getString());
+				}
+			}
+			return false;
+		});
 		register("entity/target", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
 			String s = "none";
 			if (entity != null) {
@@ -300,6 +310,19 @@ public class ChimeClient implements ClientModInitializer {
 			Entity hit = raycastEntity(world, entity);
 			if (hit != null) {
 				return matchesJsonObject(value, hit.writeNbt(new NbtCompound()));
+			}
+			return false;
+		});
+		register("entity/target_entity/name", String.class, (ItemStack stack, ClientWorld world, LivingEntity entity, String value) -> {
+			Entity hit = raycastEntity(world, entity);
+			if (hit != null) {
+				if (entity.getName() != null) {
+					if (value.startsWith("/") && value.endsWith("/")) {
+						return Pattern.matches(value.substring(1, value.length()-1), hit.getName().getString());
+					} else {
+						return value.equals(hit.getName().getString());
+					}
+				}
 			}
 			return false;
 		});
